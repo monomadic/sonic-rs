@@ -17,6 +17,10 @@ MD5                               Size      Origin
 cargo run --package rsdk-extract -- <file>
 ```
 
+### Why?
+
+Because for some reason Sonic reversers publish weird windows code and I don't really want to touch it with a 10 foot clownpole.
+
 ## Installing / Playing
 
 ```bash
