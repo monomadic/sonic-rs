@@ -10,8 +10,7 @@ Tested with following `Data.rsdk` files (md5 sum):
 
 ```
 MD5                               Size      Origin
-B7339E7A4CF4AE6264449EEC06465C7C  ????????  Sonic 2 Android
-78a03b962acf3e2622addab9cdb8e2ce  78711043  Sonic CD
+2881d2492be3ba5d3b6106cdbf82c3e5  38198396  Sonic the Hedgehog Classic apk v3.7.0
 ```
 
 ```bash
