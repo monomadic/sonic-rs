@@ -3,11 +3,12 @@ use nom::IResult;
 
 pub(crate) fn container<'a>(i: &'a [u8]) -> IResult<&[u8], RSDKContainer> {
     nom::combinator::map(header, |(_, s)| {
-        println!("Pack count: {}", s);
+        println!("File count: {}", s);
         RSDKContainer::default()
     })(i)
 }
 
+//** Returns header tag + file count. */
 fn header(i: &[u8]) -> IResult<&[u8], (&[u8], u16)> {
     nom::sequence::tuple((
         nom::bytes::complete::tag("RSDKvB"),

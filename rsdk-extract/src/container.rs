@@ -1,6 +1,9 @@
-use std::collections::HashMap;
-
 #[derive(Debug, Default)]
 pub struct RSDKContainer {
-    packs: HashMap<String, String>,
+    files: Vec<RSDKFile>,
+}
+
+#[derive(Debug, Default)]
+pub struct RSDKFile {
+    hash: String,
 }

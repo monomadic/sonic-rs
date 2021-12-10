@@ -1,6 +1,7 @@
 use std::env;
 
 mod container;
+mod extract;
 mod read;
 
 fn main() -> std::io::Result<()> {
@@ -13,8 +14,8 @@ fn main() -> std::io::Result<()> {
 
         let file = std::fs::read(filename)?;
 
-        match read::container(&file) {
-            Ok((_, container)) => println!("{:?}", container),
+        match extract::extract(&file) {
+            Ok(_) => println!("done."),
             Err(e) => println!("error parsing {:?}", e),
         }
     } else {
