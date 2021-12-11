@@ -18,6 +18,8 @@ pub fn load<P: AsRef<Path>>(path: P) -> ExtractResult<()> {
 
 /** Read header data (8 bytes) */
 fn header(mut buffer: &[u8]) {
+    let hashed_filenames = crate::hashlist::md5hashes();
+
     let whole_file = &buffer.clone();
     let mut magic_number = [0; 4];
     buffer.read_exact(&mut magic_number).unwrap();
@@ -52,11 +54,15 @@ fn header(mut buffer: &[u8]) {
         let encrypted: bool = (filesize_encoded & 0x80000000) == 0x80000000;
         let filesize = filesize_encoded & 0x7FFFFFFF;
         println!(
-            "Checksum: {}\nOffset: {}\nSize: {}\nEncrypted: {}",
+            "Checksum: {} Offset: {} Size: {} Encrypted: {}",
             md5sum, offset, filesize, encrypted
         );
 
-        if !encrypted {
+        if let Some(realname) = hashed_filenames.get(&*md5sum) {
+            println!("FOUND: {}", realname);
+        }
+
+        if !encrypted || true {
             // write stupid file
             let file = &whole_file[(offset as usize)..((filesize + offset) as usize)];
 
@@ -66,7 +72,7 @@ fn header(mut buffer: &[u8]) {
             // );
 
             use std::io::Write;
-            let mut file_buffer = std::fs::File::create(format!("output/{}.ogg", index)).unwrap();
+            let mut file_buffer = std::fs::File::create(format!("output/{}", md5sum)).unwrap();
             file_buffer.write_all(&file).unwrap();
         }
     }

@@ -2,6 +2,7 @@ use std::env;
 
 mod container;
 mod extract;
+mod hashlist;
 mod read;
 
 fn main() -> std::io::Result<()> {
