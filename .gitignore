@@ -2,3 +2,4 @@
 /archives
 /output
 *.rsdk
+.DS_Store
