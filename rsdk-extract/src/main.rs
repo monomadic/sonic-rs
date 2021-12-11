@@ -12,10 +12,10 @@ fn main() -> std::io::Result<()> {
     if let Some(filename) = args.get(1) {
         println!("Reading {}", filename);
 
-        let file = std::fs::read(filename)?;
-
-        match extract::extract(&file) {
-            Ok(_) => println!("done."),
+        // let file = std::fs::read(filename)?;
+        // match read::container(&file) {
+        match extract::load(&filename) {
+            Ok(s) => println!("{:?}", s),
             Err(e) => println!("error parsing {:?}", e),
         }
     } else {
