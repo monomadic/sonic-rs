@@ -1,4 +1,5 @@
 use byteorder::{LittleEndian, ReadBytesExt};
+use md5;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -34,25 +35,35 @@ fn header(mut buffer: &[u8]) {
 
     for index in 0..file_count {
         // read_index(&mut buffer);
-        let mut checksumbuffer = [0; 16];
-        let checksum = buffer.read_exact(&mut checksumbuffer).unwrap();
+        // let mut md5 = [0; 16];
+        // buffer.read_exact(&mut md5).unwrap();
+        // this should read as [u32;4] instead
+        let md5 = [
+            buffer.read_u32::<LittleEndian>().unwrap(),
+            buffer.read_u32::<LittleEndian>().unwrap(),
+            buffer.read_u32::<LittleEndian>().unwrap(),
+            buffer.read_u32::<LittleEndian>().unwrap(),
+        ];
+
+        let md5sum = md5.iter().map(|h| format!("{:x}", h)).collect::<String>();
+
         let offset = buffer.read_u32::<LittleEndian>().unwrap();
         let filesize_encoded = buffer.read_u32::<LittleEndian>().unwrap();
         let encrypted: bool = (filesize_encoded & 0x80000000) == 0x80000000;
         let filesize = filesize_encoded & 0x7FFFFFFF;
         println!(
-            "Checksum: {:?}\nOffset: {}\nSize: {}\nEncrypted: {}",
-            checksum, offset, filesize, encrypted
+            "Checksum: {}\nOffset: {}\nSize: {}\nEncrypted: {}",
+            md5sum, offset, filesize, encrypted
         );
 
         if !encrypted {
             // write stupid file
             let file = &whole_file[(offset as usize)..((filesize + offset) as usize)];
 
-            println!(
-                "file: {}",
-                std::str::from_utf8(&file[0..4]).unwrap_or("err")
-            );
+            // println!(
+            //     "file: {}",
+            //     std::str::from_utf8(&file[0..4]).unwrap_or("err")
+            // );
 
             use std::io::Write;
             let mut file_buffer = std::fs::File::create(format!("output/{}.ogg", index)).unwrap();
