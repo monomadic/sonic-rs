@@ -1,10 +1,10 @@
 use md5;
 use std::collections::HashMap;
 
-static dictionary: &str = include_str!("dictionary.txt");
+static DICTIONARY: &str = include_str!("dictionary.txt");
 
 pub(crate) fn generate() -> HashMap<String, String> {
-    dictionary
+    DICTIONARY
         .lines()
         .map(|filename| {
             (

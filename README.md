@@ -26,3 +26,8 @@ Because for some reason Sonic reversers publish weird windows code and I don't r
 ```bash
 cargo run
 ```
+
+## Resources
+
+- https://www.lucianociccariello.com/research/sonicmania
+- http://unhaut.epizy.com/retrun/sonic2013.html
