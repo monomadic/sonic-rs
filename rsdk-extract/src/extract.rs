@@ -34,7 +34,7 @@ fn header(mut buffer: &[u8]) {
 
     println!("File count: {}", file_count);
 
-    for index in 0..file_count {
+    for _index in 0..file_count {
         // read_index(&mut buffer);
         // let mut md5 = [0; 16];
         // buffer.read_exact(&mut md5).unwrap();
@@ -46,7 +46,10 @@ fn header(mut buffer: &[u8]) {
             buffer.read_u32::<LittleEndian>().unwrap(),
         ];
 
-        let md5sum = md5.iter().map(|h| format!("{:x}", h)).collect::<String>();
+        let md5sum = md5.iter().map(|h| format!("{:08x}", h)).collect::<String>();
+
+        // let md5hash = ::md5::Digest::from(md5);
+        // println!("hashhh {:x}", md5);
 
         let offset = buffer.read_u32::<LittleEndian>().unwrap();
         let filesize_encoded = buffer.read_u32::<LittleEndian>().unwrap();
@@ -57,30 +60,30 @@ fn header(mut buffer: &[u8]) {
             md5sum, offset, filesize, encrypted
         );
 
-        if !encrypted || true {
-            // write stupid file
-            let file = &whole_file[(offset as usize)..((filesize + offset) as usize)];
+        // write stupid file
+        let file = &whole_file[(offset as usize)..((filesize + offset) as usize)];
 
-            // println!(
-            //     "file: {}",
-            //     std::str::from_utf8(&file[0..4]).unwrap_or("err")
-            // );
+        // println!(
+        //     "file: {}",
+        //     std::str::from_utf8(&file[0..4]).unwrap_or("err")
+        // );
 
-            let filename: &str = dictionary.get(&*md5sum).unwrap_or(&md5sum);
-            let suffix = if encrypted { ".encrypted" } else { "" };
+        println!("Searching for {:?} {:?}", &md5sum, dictionary.get(&*md5sum),);
 
-            let output_path = format!("output/{}{}", &filename, suffix);
-            println!("Writing: {}", output_path);
+        let filename: &str = dictionary.get(&*md5sum).unwrap_or(&md5sum);
+        let suffix = if encrypted { ".encrypted" } else { "" };
 
-            // swallow error
-            let mut path = std::path::PathBuf::from(&output_path);
-            path.pop();
-            let _ = std::fs::create_dir_all(&path);
+        let output_path = format!("output/{}{}", &filename, suffix);
+        println!("Writing: {}", output_path);
 
-            use std::io::Write;
-            let mut file_buffer = std::fs::File::create(output_path).unwrap();
-            file_buffer.write_all(&file).unwrap();
-        }
+        // swallow error
+        let mut path = std::path::PathBuf::from(&output_path);
+        path.pop();
+        let _ = std::fs::create_dir_all(&path);
+
+        use std::io::Write;
+        let mut file_buffer = std::fs::File::create(output_path).unwrap();
+        file_buffer.write_all(&file).unwrap();
     }
 
     // LittleEndian::read_u16(load_part(2)) as usize;
