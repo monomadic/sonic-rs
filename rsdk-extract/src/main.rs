@@ -1,8 +1,8 @@
 use std::env;
 
 mod container;
+mod dictionary;
 mod extract;
-mod hashlist;
 mod read;
 
 fn main() -> std::io::Result<()> {

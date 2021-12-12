@@ -1,5 +1,4 @@
 use byteorder::{LittleEndian, ReadBytesExt};
-use md5;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -18,7 +17,7 @@ pub fn load<P: AsRef<Path>>(path: P) -> ExtractResult<()> {
 
 /** Read header data (8 bytes) */
 fn header(mut buffer: &[u8]) {
-    let hashed_filenames = crate::hashlist::md5hashes();
+    let dictionary = crate::dictionary::generate();
 
     let whole_file = &buffer.clone();
     let mut magic_number = [0; 4];
@@ -67,7 +66,7 @@ fn header(mut buffer: &[u8]) {
             //     std::str::from_utf8(&file[0..4]).unwrap_or("err")
             // );
 
-            let filename: &str = hashed_filenames.get(&*md5sum).unwrap_or(&md5sum.as_str());
+            let filename: &str = dictionary.get(&*md5sum).unwrap_or(&md5sum);
             let suffix = if encrypted { ".encrypted" } else { "" };
 
             let output_path = format!("output/{}{}", &filename, suffix);
