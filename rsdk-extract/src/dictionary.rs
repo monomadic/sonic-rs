@@ -8,14 +8,14 @@ pub(crate) fn generate() -> HashMap<String, String> {
     DICTIONARY
         .lines()
         .map(|filename| {
-            let md5sum = format!("{:?}", md5::compute(filename.to_lowercase()));
+            // let md5sum = format!("{:?}", md5::compute(filename.to_lowercase()));
 
-            println!(
-                "Hashed {} as {:?} {:?}",
-                filename.to_lowercase(),
-                md5sum,
-                md5::compute(filename.to_lowercase())
-            );
+            // println!(
+            //     "Hashed {} as {:?} {:?}",
+            //     filename.to_lowercase(),
+            //     md5sum,
+            //     md5::compute(filename.to_lowercase())
+            // );
             (
                 format!("{:x}", md5::compute(filename.to_lowercase())),
                 String::from(filename),

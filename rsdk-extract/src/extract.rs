@@ -27,18 +27,20 @@ fn header(mut buffer: &[u8]) {
         std::str::from_utf8(&magic_number).unwrap()
     );
 
-    let version = buffer.read_u16::<LittleEndian>().unwrap();
-    println!("Version: {}", version);
+    let mut version = [0; 2];
+    buffer.read_exact(&mut version).unwrap();
+    println!("Version: {}", std::str::from_utf8(&version).unwrap());
+
+    match version[1] {
+        66 => println!("RSDKv4 Detected (Sonic the Hedgehog 1 and Sonic the Hedgehog 2 remasters)"),
+        _ => println!("Unknown or unsupported RSDK version."),
+    }
 
     let file_count = buffer.read_u16::<LittleEndian>().unwrap();
 
     println!("File count: {}", file_count);
 
     for _index in 0..file_count {
-        // read_index(&mut buffer);
-        // let mut md5 = [0; 16];
-        // buffer.read_exact(&mut md5).unwrap();
-        // this should read as [u32;4] instead
         let md5 = [
             buffer.read_u32::<LittleEndian>().unwrap(),
             buffer.read_u32::<LittleEndian>().unwrap(),
@@ -55,20 +57,15 @@ fn header(mut buffer: &[u8]) {
         let filesize_encoded = buffer.read_u32::<LittleEndian>().unwrap();
         let encrypted: bool = (filesize_encoded & 0x80000000) == 0x80000000;
         let filesize = filesize_encoded & 0x7FFFFFFF;
-        println!(
-            "Checksum: {} Offset: {} Size: {} Encrypted: {}",
-            md5sum, offset, filesize, encrypted
-        );
+        // println!(
+        //     "Checksum: {} Offset: {} Size: {} Encrypted: {}",
+        //     md5sum, offset, filesize, encrypted
+        // );
 
         // write stupid file
         let file = &whole_file[(offset as usize)..((filesize + offset) as usize)];
 
-        // println!(
-        //     "file: {}",
-        //     std::str::from_utf8(&file[0..4]).unwrap_or("err")
-        // );
-
-        println!("Searching for {:?} {:?}", &md5sum, dictionary.get(&*md5sum),);
+        // println!("Searching for {:?} {:?}", &md5sum, dictionary.get(&*md5sum),);
 
         let filename: &str = dictionary.get(&*md5sum).unwrap_or(&md5sum);
         let suffix = if encrypted { ".encrypted" } else { "" };
