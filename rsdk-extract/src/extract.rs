@@ -58,10 +58,6 @@ fn header(mut buffer: &[u8]) {
             md5sum, offset, filesize, encrypted
         );
 
-        if let Some(realname) = hashed_filenames.get(&*md5sum) {
-            println!("FOUND: {}", realname);
-        }
-
         if !encrypted || true {
             // write stupid file
             let file = &whole_file[(offset as usize)..((filesize + offset) as usize)];
@@ -71,8 +67,19 @@ fn header(mut buffer: &[u8]) {
             //     std::str::from_utf8(&file[0..4]).unwrap_or("err")
             // );
 
+            let filename: &str = hashed_filenames.get(&*md5sum).unwrap_or(&md5sum.as_str());
+            let suffix = if encrypted { ".encrypted" } else { "" };
+
+            let output_path = format!("output/{}{}", &filename, suffix);
+            println!("Writing: {}", output_path);
+
+            // swallow error
+            let mut path = std::path::PathBuf::from(&output_path);
+            path.pop();
+            let _ = std::fs::create_dir_all(&path);
+
             use std::io::Write;
-            let mut file_buffer = std::fs::File::create(format!("output/{}", md5sum)).unwrap();
+            let mut file_buffer = std::fs::File::create(output_path).unwrap();
             file_buffer.write_all(&file).unwrap();
         }
     }
