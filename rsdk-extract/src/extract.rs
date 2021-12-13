@@ -102,42 +102,44 @@ fn header(mut buffer: &[u8]) {
 static ENC_KEY_2: u32 = 0x24924925;
 static ENC_KEY_1: u32 = 0xAAAAAAAB;
 
+/** XOR-based crypt */
 fn decrypt(bytes: &[u8]) -> Vec<u8> {
-    for byte in bytes {}
+    let mut tmp_byte: u8 = 0;
+    let filesize: u32 = bytes.len() as u32;
+    let (key1, key2) = generate_eload_keys(filesize);
+    let e_string_no: u32 = (filesize / 4) & 0x7F; // encrypted string number?
+    let mut e_string_pos_b = 0_usize;
+
+    for (i, byte) in bytes.iter().enumerate() {
+        tmp_byte = e_string_no ^ key2[e_string_pos_b];
+        tmp_byte ^= bytes[i];
+    }
 
     Vec::new()
 }
 
-fn generate_eload_keys(filesize: u32) -> (String, String) {
+fn generate_eload_keys(filesize: u32) -> ([u32; 4], [u32; 4]) {
     let arg1 = filesize;
     let arg2 = (filesize >> 1) + 1;
-
-    println!("using args {} {}", arg1, arg2);
-
-    // convert filesize to a string
-    // let filesize_string = filesize.to_string();
-    // let length = filesize_string.len();
-
-    // let md5_of_arg1 = md5::compute(arg1.to_string());
 
     (generate_key(arg1), generate_key(arg2))
 }
 
-fn generate_key(i: u32) -> String {
+fn generate_key(i: u32) -> [u32; 4] {
     let checksum = md5::compute(i.to_string());
 
     use std::io::Cursor;
     let mut cursor = Cursor::new(checksum.to_vec());
 
-    let key: String = [
+    [
         cursor.read_u32::<LittleEndian>().unwrap(),
         cursor.read_u32::<LittleEndian>().unwrap(),
         cursor.read_u32::<LittleEndian>().unwrap(),
         cursor.read_u32::<LittleEndian>().unwrap(),
     ]
-    .iter()
-    .map(|h| format!("{:08x}", h))
-    .collect::<String>();
+    // .iter()
+    // .map(|h| format!("{:08x}", h))
+    // .collect::<String>();
 
-    format!("{}", key)
+    // format!("{}", key)
 }
