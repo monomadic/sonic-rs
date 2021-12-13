@@ -21,7 +21,7 @@ public class Program
 		Console.Write("\n");
 		App app = new App();
 		app.FileSize = 4388;
-		byte[] decrypted = app.Decrypt(new byte[16]);
+		byte[] decrypted = app.Decrypt(md5Buf);
 		Console.Write("\ndecrypted ");
 		foreach (byte i in decrypted)
 		{
@@ -109,6 +109,7 @@ public class App
 		const uint ENC_KEY_2 = 0x24924925;
 		Console.WriteLine("ENC_KEY_2 0x{0:X}", ENC_KEY_2);
 		const uint ENC_KEY_1 = 0xAAAAAAAB;
+
 		int TempByt;
 		int Key1;
 		int Key2;
@@ -117,8 +118,16 @@ public class App
 		byte[] ReturnData = new byte[data.Length];
 		for (int i = 0; i < data.Length; i++)
 		{
+			Console.WriteLine("eStringNo {0:} {1:}", this.eStringNo.GetType(), this.eStringNo);
+			Console.WriteLine("eStringPosB {0:} {1:}", this.eStringPosB.GetType(), this.eStringPosB);
+			Console.WriteLine("encryptionStringB {0:} {1:}", this.encryptionStringB.GetType(), this.encryptionStringB);
+			Console.WriteLine("encryptionStringBeStringPosB {0:} {1:X}", encryptionStringB[eStringPosB].GetType(), encryptionStringB[eStringPosB]);
+			
 			TempByt = eStringNo ^ encryptionStringB[eStringPosB];
+			Console.WriteLine("TempByt {0:} 0x{1:X}", TempByt.GetType(), TempByt);
 			TempByt ^= data[i];
+			Console.WriteLine("TempByt2 {0:} 0x{1:X}", TempByt.GetType(), TempByt);
+			Console.WriteLine("data[i] {0:} 0x{1:X}", data[i].GetType(), data[i]);
 			if (eNybbleSwap == 1) // swap nibbles: 0xAB <-> 0xBA
 			{
 				TempByt = ((TempByt << 4) + (TempByt >> 4)) & 0xFF;

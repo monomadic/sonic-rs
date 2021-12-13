@@ -61,6 +61,10 @@ fn header(mut buffer: &[u8]) {
         // write stupid file
         let file = &whole_file[(offset as usize)..((filesize + offset) as usize)];
 
+        if encrypted {
+            decrypt(file);
+        }
+
         // println!("Searching for {:?} {:?}", &md5sum, dictionary.get(&*md5sum),);
 
         let filename: &str = dictionary.get(&*md5sum).unwrap_or(&md5sum);
@@ -104,42 +108,110 @@ static ENC_KEY_1: u32 = 0xAAAAAAAB;
 
 /** XOR-based crypt */
 fn decrypt(bytes: &[u8]) -> Vec<u8> {
-    let mut tmp_byte: u8 = 0;
+    let mut tmp_byte: u32 = 0;
     let filesize: u32 = bytes.len() as u32;
     let (key1, key2) = generate_eload_keys(filesize);
-    let e_string_no: u32 = (filesize / 4) & 0x7F; // encrypted string number?
-    let mut e_string_pos_b = 0_usize;
 
-    for (i, byte) in bytes.iter().enumerate() {
-        tmp_byte = e_string_no ^ key2[e_string_pos_b];
-        tmp_byte ^= bytes[i];
+    let e_string_no: u32 = (filesize / 4) & 0x7F; // encrypted string number?
+    let mut e_string_pos_a = 0_usize;
+    let mut e_string_pos_b = 8_usize;
+
+    let mut e_nibbleswap = 0_u32;
+
+    let mut return_data: Vec<u8> = Vec::with_capacity(filesize as usize);
+
+    print!("filesize {} e_string_no {} ", filesize, e_string_no);
+    // println!("e_string_pos_b {}", e_string_pos_b);
+    // print!("key2[e_string_pos_b] {:x}", key2[e_string_pos_b]);
+
+    tmp_byte = e_string_no ^ (key2[e_string_pos_b] as u32);
+    print!("tmp_byte {:X} ", tmp_byte);
+
+    tmp_byte ^= bytes[0] as u32;
+    print!("tmp_byte {:X} {:X} ", tmp_byte, bytes[0]);
+
+    if e_nibbleswap == 1 { // swap nibbles: 0xAB <-> 0xBA
+         // TempByt = ((TempByt << 4) + (TempByt >> 4)) & 0xFF;
     }
+
+    tmp_byte ^= key1[e_string_pos_a] as u32;
+    println!("tmp_byte {:x}", tmp_byte as u8);
+
+    return_data.push(tmp_byte as u8);
+
+    // for (i, byte) in bytes.iter().enumerate() {
+    //     tmp_byte = e_string_no ^ (key2[e_string_pos_b] as u32);
+    //     println!("tmp_byte {:X}", tmp_byte);
+    //     // tmp_byte ^= bytes[i];
+    // }
 
     Vec::new()
 }
 
-fn generate_eload_keys(filesize: u32) -> ([u32; 4], [u32; 4]) {
+fn generate_eload_keys(filesize: u32) -> (Vec<u8>, Vec<u8>) {
     let arg1 = filesize;
     let arg2 = (filesize >> 1) + 1;
 
     (generate_key(arg1), generate_key(arg2))
 }
 
-fn generate_key(i: u32) -> [u32; 4] {
+fn generate_key(i: u32) -> Vec<u8> {
     let checksum = md5::compute(i.to_string());
 
     use std::io::Cursor;
     let mut cursor = Cursor::new(checksum.to_vec());
 
+    // let mut key = [0_u8; 16];
+    // cursor.read_exact(&mut key).unwrap();
+
+    // key
+
+    // cursor
+    //     .read_u32::<LittleEndian>()
+    //     .unwrap()
+    //     .to_ne_bytes()
+    //     .join(cursor.read_u32::<LittleEndian>().unwrap().to_ne_bytes())
+    //     .join(cursor.read_u32::<LittleEndian>().unwrap().to_ne_bytes())
+    //     .join(cursor.read_u32::<LittleEndian>().unwrap().to_ne_bytes())
+
     [
-        cursor.read_u32::<LittleEndian>().unwrap(),
-        cursor.read_u32::<LittleEndian>().unwrap(),
-        cursor.read_u32::<LittleEndian>().unwrap(),
-        cursor.read_u32::<LittleEndian>().unwrap(),
+        cursor.read_u32::<LittleEndian>().unwrap().to_be_bytes(),
+        cursor.read_u32::<LittleEndian>().unwrap().to_be_bytes(),
+        cursor.read_u32::<LittleEndian>().unwrap().to_be_bytes(),
+        cursor.read_u32::<LittleEndian>().unwrap().to_be_bytes(),
     ]
+    .concat()
+
+    // [
+    //     cursor.read_u32::<LittleEndian>().unwrap(),
+    //     cursor.read_u32::<LittleEndian>().unwrap(),
+    //     cursor.read_u32::<LittleEndian>().unwrap(),
+    //     cursor.read_u32::<LittleEndian>().unwrap(),
+    // ]
     // .iter()
     // .map(|h| format!("{:08x}", h))
     // .collect::<String>();
 
     // format!("{}", key)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn test_generate_eload_keys() {
+        assert_eq!(
+            generate_eload_keys(4388),
+            (
+                vec![
+                    0xF0, 0x03, 0x38, 0x47, 0x7D, 0xD7, 0xEB, 0xF2, 0xDA, 0x60, 0xEE, 0x83, 0x81,
+                    0xF3, 0x61, 0xAA
+                ],
+                vec![
+                    0xCD, 0x6E, 0x5F, 0x8C, 0x23, 0xEB, 0xA0, 0x29, 0x0C, 0x19, 0x59, 0x44, 0xDD,
+                    0x16, 0x1C, 0xA5
+                ]
+            )
+        );
+    }
 }
