@@ -110,9 +110,9 @@ static ENC_KEY_1: u32 = 0xAAAAAAAB;
 fn decrypt(bytes: &[u8]) -> Vec<u8> {
     let mut tmp_byte: u32 = 0;
     let filesize: u32 = bytes.len() as u32;
-    let (key1, key2) = generate_eload_keys(filesize);
+    let (mut key1, mut key2) = generate_eload_keys(filesize);
 
-    let e_string_no: u32 = (filesize / 4) & 0x7F; // encrypted string number?
+    let mut e_string_no: u32 = (filesize / 4) & 0x7F; // encrypted string number?
     let mut e_string_pos_a = 0_usize;
     let mut e_string_pos_b = 8_usize;
 
@@ -120,21 +120,50 @@ fn decrypt(bytes: &[u8]) -> Vec<u8> {
 
     let mut return_data: Vec<u8> = Vec::with_capacity(filesize as usize);
 
+    let mut temp1 = 0;
+    let mut temp2 = 0;
+
     print!("filesize {} e_string_no {} ", filesize, e_string_no);
     // println!("e_string_pos_b {}", e_string_pos_b);
     // print!("key2[e_string_pos_b] {:x}", key2[e_string_pos_b]);
 
     for byte in bytes.iter() {
         tmp_byte = e_string_no ^ (key2[e_string_pos_b] as u32);
-        print!("tmp_byte {:X} ", tmp_byte);
+        // print!("tmp_byte {:X} ", tmp_byte);
         tmp_byte ^= byte.clone() as u32;
-        print!("tmp_byte {:X} {:X} ", tmp_byte, bytes[0]);
-        if e_nibbleswap == 1 { // swap nibbles: 0xAB <-> 0xBA
-             // TempByt = ((TempByt << 4) + (TempByt >> 4)) & 0xFF;
+        // print!("tmp_byte {:X} {:X} ", tmp_byte, bytes[0]);
+        if e_nibbleswap == 1 {
+            // swap nibbles: 0xAB <-> 0xBA
+            tmp_byte = ((tmp_byte << 4) + (tmp_byte >> 4)) & 0xFF;
         }
         tmp_byte ^= key1[e_string_pos_a] as u32;
-        println!("tmp_byte {:x}", tmp_byte as u8);
+        // println!("tmp_byte {:x}", tmp_byte as u8);
         return_data.push(tmp_byte as u8);
+
+        e_string_pos_a += 1;
+        e_string_pos_b += 1;
+
+        if e_string_pos_a <= 0x0F {
+            if e_string_pos_b > 0x0C {
+                e_string_pos_b = 0;
+                e_nibbleswap ^= 0x01;
+            }
+        } else if e_string_pos_b <= 0x08 {
+            e_string_pos_a = 0;
+            e_nibbleswap ^= 0x01;
+        } else {
+            e_string_no += 2;
+            e_string_no &= 0x7F;
+            if (e_nibbleswap != 0) {
+                unimplemented!();
+                // key1 = mul_unsigned_high(ENC_KEY_1, e_string_no);
+                // key2 = mul_unsigned_high(ENC_KEY_2, e_string_no);
+                // e_nibbleswap = 0;
+                // temp1 = key2 + (e_string_no - key2) / 2;
+            } else {
+                unimplemented!();
+            }
+        }
     }
 
     Vec::new()
