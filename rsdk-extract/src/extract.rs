@@ -53,25 +53,34 @@ fn header(mut buffer: &[u8]) {
         let filesize_encoded = buffer.read_u32::<LittleEndian>().unwrap();
         let encrypted: bool = (filesize_encoded & 0x80000000) == 0x80000000;
         let filesize = filesize_encoded & 0x7FFFFFFF;
-        println!(
-            "Checksum: {} Offset: {} Size: {} Encrypted: {}",
-            md5sum, offset, filesize, encrypted
-        );
-
-        // write stupid file
-        let file = &whole_file[(offset as usize)..((filesize + offset) as usize)];
-
-        if encrypted {
-            decrypt(file);
-        }
-
-        // println!("Searching for {:?} {:?}", &md5sum, dictionary.get(&*md5sum),);
+        // println!(
+        //     "Checksum: {} Offset: {} Size: {} Encrypted: {}",
+        //     md5sum, offset, filesize, encrypted
+        // );
 
         let filename: &str = dictionary.get(&*md5sum).unwrap_or(&md5sum);
-        let suffix = if encrypted { ".encrypted" } else { "" };
+        // let suffix = if encrypted { ".decrypted" } else { "" };
+        let suffix = "";
 
         let output_path = format!("output/{}{}", &filename, suffix);
-        println!("Writing: {}", output_path);
+        // println!("Writing: {}", output_path);
+        // println!(
+        //     "Writing: {} Offset: {} Size: {} Encrypted: {}",
+        //     output_path, offset, filesize, encrypted
+        // );
+
+        // write stupid file
+        let filebuffer = &whole_file[(offset as usize)..((filesize + offset) as usize)];
+        let mut file: Vec<u8> = Vec::from(filebuffer);
+
+        if encrypted {
+            file = decrypt(&file, file.len() as u32);
+
+            println!(
+                "Decrypted: {} Offset: {} Size: {} Encrypted: {}",
+                output_path, offset, filesize, encrypted
+            );
+        }
 
         // swallow error
         let mut path = std::path::PathBuf::from(&output_path);
@@ -107,9 +116,9 @@ static ENC_KEY_2: u32 = 0x24924925;
 static ENC_KEY_1: u32 = 0xAAAAAAAB;
 
 /** XOR-based crypt */
-fn decrypt(bytes: &[u8]) -> Vec<u8> {
+fn decrypt(bytes: &[u8], filesize: u32) -> Vec<u8> {
     let mut tmp_byte: u32 = 0;
-    let filesize: u32 = bytes.len() as u32;
+    // let filesize: u32 = bytes.len() as u32;
     let (mut key1, mut key2) = generate_eload_keys(filesize);
 
     let mut e_string_no: u32 = (filesize / 4) & 0x7F; // encrypted string number?
@@ -128,6 +137,10 @@ fn decrypt(bytes: &[u8]) -> Vec<u8> {
     // print!("key2[e_string_pos_b] {:x}", key2[e_string_pos_b]);
 
     for byte in bytes.iter() {
+        if e_string_pos_b >= key2.len() {
+            break;
+        };
+
         tmp_byte = e_string_no ^ (key2[e_string_pos_b] as u32);
         // print!("tmp_byte {:X} ", tmp_byte);
         tmp_byte ^= byte.clone() as u32;
@@ -155,18 +168,34 @@ fn decrypt(bytes: &[u8]) -> Vec<u8> {
             e_string_no += 2;
             e_string_no &= 0x7F;
             if (e_nibbleswap != 0) {
-                unimplemented!();
-                // key1 = mul_unsigned_high(ENC_KEY_1, e_string_no);
-                // key2 = mul_unsigned_high(ENC_KEY_2, e_string_no);
-                // e_nibbleswap = 0;
-                // temp1 = key2 + (e_string_no - key2) / 2;
+                key1 = mul_unsigned_high(ENC_KEY_1, e_string_no as i32);
+                key2 = mul_unsigned_high(ENC_KEY_2, e_string_no as i32);
+                e_nibbleswap = 0;
+                // temp1 = as_u32_le(&key2) + (e_string_no - key2) / 2; // convert vec<u8> to u32??
+                // temp2 = key1 / 8 * 3;
+                e_string_pos_a = e_string_no as usize - temp1 / 4 * 7;
+                e_string_pos_b = e_string_no as usize - temp1 * 4 + 2;
+                // unimplemented!();
             } else {
-                unimplemented!();
+                // unimplemented!();
             }
         }
     }
 
-    Vec::new()
+    return_data
+}
+
+fn as_u32_le(array: &[u8; 4]) -> u32 {
+    ((array[0] as u32) << 0)
+        + ((array[1] as u32) << 8)
+        + ((array[2] as u32) << 16)
+        + ((array[3] as u32) << 24)
+}
+
+fn mul_unsigned_high(a: u32, b: i32) -> Vec<u8> {
+    (((a as i64) * (b as i64) >> 32 as i64) as i32)
+        .to_be_bytes()
+        .to_vec()
 }
 
 fn generate_eload_keys(filesize: u32) -> (Vec<u8>, Vec<u8>) {
@@ -182,19 +211,6 @@ fn generate_key(i: u32) -> Vec<u8> {
     use std::io::Cursor;
     let mut cursor = Cursor::new(checksum.to_vec());
 
-    // let mut key = [0_u8; 16];
-    // cursor.read_exact(&mut key).unwrap();
-
-    // key
-
-    // cursor
-    //     .read_u32::<LittleEndian>()
-    //     .unwrap()
-    //     .to_ne_bytes()
-    //     .join(cursor.read_u32::<LittleEndian>().unwrap().to_ne_bytes())
-    //     .join(cursor.read_u32::<LittleEndian>().unwrap().to_ne_bytes())
-    //     .join(cursor.read_u32::<LittleEndian>().unwrap().to_ne_bytes())
-
     [
         cursor.read_u32::<LittleEndian>().unwrap().to_be_bytes(),
         cursor.read_u32::<LittleEndian>().unwrap().to_be_bytes(),
@@ -202,23 +218,12 @@ fn generate_key(i: u32) -> Vec<u8> {
         cursor.read_u32::<LittleEndian>().unwrap().to_be_bytes(),
     ]
     .concat()
-
-    // [
-    //     cursor.read_u32::<LittleEndian>().unwrap(),
-    //     cursor.read_u32::<LittleEndian>().unwrap(),
-    //     cursor.read_u32::<LittleEndian>().unwrap(),
-    //     cursor.read_u32::<LittleEndian>().unwrap(),
-    // ]
-    // .iter()
-    // .map(|h| format!("{:08x}", h))
-    // .collect::<String>();
-
-    // format!("{}", key)
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+
     #[test]
     fn test_generate_eload_keys() {
         assert_eq!(
@@ -234,5 +239,19 @@ mod test {
                 ]
             )
         );
+    }
+
+    #[test]
+    fn test_decrypt() {
+        assert_eq!(
+            decrypt(&[0xEE, 0x63, 0x75, 0x05, 0xBB], 4388),
+            vec![0x5B, 0x30, 0x5D, 0x4F, 0x52]
+        );
+
+        // PNG for Data/Game/Menu/Amazon.png
+        assert_eq!(
+            decrypt(&[0x86, 0x79, 0x4D, 0xF0], 130991),
+            vec![0x89, 0x50, 0x4E, 0x47]
+        )
     }
 }
