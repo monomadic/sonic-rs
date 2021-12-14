@@ -11,7 +11,11 @@ public class Program
 {
 	public static void Main()
 	{
-		byte[] md5Buf = new byte[]{0xEE, 0x63, 0x75, 0x05, 0xBB};
+		//byte[] md5Buf = new byte[]{0xEE, 0x63, 0x75, 0x05, 0xBB};
+		byte[] md5Buf = new byte[]{0xC0, 0x44, 0x5E, 0x3F, 0x31, 0xFF, 0x30, 0x7C, 0x5F, 0x4A, 0x7E, 0x09, 0x76,
+                    0x75, 0xC8, 0x3D, 0xE4, 0x07, 0x0E, 0x59, 0xB0, 0xE4, 0xA7, 0xB2, 0x2A, 0xEF,
+                    0x8E, 0x15, 0x4B, 0x4A, 0x60, 0xD2};
+		
 		Console.Write("\nmd5Buf    ");
 		foreach (byte i in md5Buf)
 		{
@@ -20,7 +24,7 @@ public class Program
 
 		Console.Write("\n");
 		App app = new App();
-		app.FileSize = 4388;
+		app.FileSize = 11014;
 		byte[] decrypted = app.Decrypt(md5Buf);
 		Console.Write("\ndecrypted ");
 		foreach (byte i in decrypted)
@@ -134,6 +138,7 @@ public class App
 			}
 
 			TempByt ^= encryptionStringA[eStringPosA];
+			Console.WriteLine("TempByt3 {0:} 0x{1:X}", TempByt.GetType(), TempByt);
 			ReturnData[i] = (byte)TempByt;
 			eStringPosA++;
 			eStringPosB++;
@@ -160,6 +165,7 @@ public class App
 					Key2 = MulUnsignedHigh(ENC_KEY_2, eStringNo);
 					eNybbleSwap = 0;
 					Temp1 = Key2 + (eStringNo - Key2) / 2;
+					Console.WriteLine("Tempxxxx {0:} 0x{1:X}", Temp1.GetType(), Temp1);
 					Temp2 = Key1 / 8 * 3;
 					eStringPosA = eStringNo - Temp1 / 4 * 7;
 					eStringPosB = eStringNo - Temp2 * 4 + 2;
@@ -170,10 +176,11 @@ public class App
 					Key2 = MulUnsignedHigh(ENC_KEY_2, eStringNo);
 					eNybbleSwap = 1;
 					Temp1 = Key2 + (eStringNo - Key2) / 2;
+					Console.WriteLine("Temp1x {0:} 0x{1:X} {2:}", Temp1.GetType(), Temp1, Key2 + (eStringNo - Key2) / 2);
 					Temp2 = Key1 / 8 * 3;
 					eStringPosB = eStringNo - Temp1 / 4 * 7;
 					eStringPosA = eStringNo - Temp2 * 4 + 3;
-				}
+				}	
 			}
 		}
 

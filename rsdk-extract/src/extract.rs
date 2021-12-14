@@ -138,7 +138,10 @@ fn decrypt(bytes: &[u8], filesize: u32) -> Vec<u8> {
 
     for byte in bytes.iter() {
         if e_string_pos_b >= key2.len() {
-            break;
+            panic!(
+                "index ({}) out of bounds: key2 is {:?}",
+                e_string_pos_b, key2
+            );
         };
 
         tmp_byte = e_string_no ^ (key2[e_string_pos_b] as u32);
@@ -168,14 +171,21 @@ fn decrypt(bytes: &[u8], filesize: u32) -> Vec<u8> {
             e_string_no += 2;
             e_string_no &= 0x7F;
             if (e_nibbleswap != 0) {
-                key1 = mul_unsigned_high(ENC_KEY_1, e_string_no as i32);
-                key2 = mul_unsigned_high(ENC_KEY_2, e_string_no as i32);
+                let key1 = mul_unsigned_high(ENC_KEY_1, e_string_no as i32);
+                let key2 = mul_unsigned_high(ENC_KEY_2, e_string_no as i32);
                 e_nibbleswap = 0;
-                // temp1 = as_u32_le(&key2) + (e_string_no - key2) / 2; // convert vec<u8> to u32??
-                // temp2 = key1 / 8 * 3;
-                e_string_pos_a = e_string_no as usize - temp1 / 4 * 7;
-                e_string_pos_b = e_string_no as usize - temp1 * 4 + 2;
-                // unimplemented!();
+                let tmpkey1: u32 = u32::from_be_bytes([key1[0], key1[1], key1[2], key1[3]]);
+                let tmpkey2: u32 = u32::from_be_bytes([key2[0], key2[1], key2[2], key2[3]]);
+                // println!("{:x}, {}", (e_string_no - tmpkey2) / 2, tmpkey2);
+                temp1 = tmpkey2 + (e_string_no - tmpkey2) / 2; // convert vec<u8> to u32??
+                temp2 = tmpkey1 / 8 * 3;
+                // println!("\n    ---temp1 {}, temp2 {}", temp1, temp2);
+                e_string_pos_a = (e_string_no - temp1 / 4 * 7) as usize;
+                e_string_pos_b = (e_string_no - temp2 * 4 + 2) as usize;
+                // println!(
+                //     "\n    ---e_string_pos_a {}, e_string_pos_b {}",
+                //     e_string_pos_a, e_string_pos_b
+                // );
             } else {
                 unimplemented!();
             }
@@ -198,26 +208,30 @@ fn mul_unsigned_high(a: u32, b: i32) -> Vec<u8> {
         .to_vec()
 }
 
-fn generate_eload_keys(filesize: u32) -> (Vec<u8>, Vec<u8>) {
+fn generate_eload_keys(filesize: u32) -> ([u8; 16], [u8; 16]) {
     let arg1 = filesize;
     let arg2 = (filesize >> 1) + 1;
 
     (generate_key(arg1), generate_key(arg2))
 }
 
-fn generate_key(i: u32) -> Vec<u8> {
+fn generate_key(i: u32) -> [u8; 16] {
     let checksum = md5::compute(i.to_string());
 
     use std::io::Cursor;
     let mut cursor = Cursor::new(checksum.to_vec());
 
-    [
+    let boxed_slice = [
         cursor.read_u32::<LittleEndian>().unwrap().to_be_bytes(),
         cursor.read_u32::<LittleEndian>().unwrap().to_be_bytes(),
         cursor.read_u32::<LittleEndian>().unwrap().to_be_bytes(),
         cursor.read_u32::<LittleEndian>().unwrap().to_be_bytes(),
     ]
     .concat()
+    .into_boxed_slice();
+
+    let boxed_array: Box<[u8; 16]> = boxed_slice.try_into().unwrap();
+    *boxed_array
 }
 
 #[cfg(test)]
@@ -229,11 +243,11 @@ mod test {
         assert_eq!(
             generate_eload_keys(4388),
             (
-                vec![
+                [
                     0xF0, 0x03, 0x38, 0x47, 0x7D, 0xD7, 0xEB, 0xF2, 0xDA, 0x60, 0xEE, 0x83, 0x81,
                     0xF3, 0x61, 0xAA
                 ],
-                vec![
+                [
                     0xCD, 0x6E, 0x5F, 0x8C, 0x23, 0xEB, 0xA0, 0x29, 0x0C, 0x19, 0x59, 0x44, 0xDD,
                     0x16, 0x1C, 0xA5
                 ]
