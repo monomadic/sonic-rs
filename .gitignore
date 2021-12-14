@@ -1,5 +1,5 @@
 /target
 /archives
-/output
+/resources/*
 *.rsdk
 .DS_Store

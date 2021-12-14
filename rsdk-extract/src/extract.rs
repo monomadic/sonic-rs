@@ -62,7 +62,7 @@ fn header(mut buffer: &[u8]) {
         // let suffix = if encrypted { ".decrypted" } else { "" };
         let suffix = "";
 
-        let output_path = format!("output/{}{}", &filename, suffix);
+        let output_path = format!("resources/{}{}", &filename, suffix);
         // println!("Writing: {}", output_path);
         println!(
             "Writing: {} Offset: {} Size: {} Encrypted: {}",
