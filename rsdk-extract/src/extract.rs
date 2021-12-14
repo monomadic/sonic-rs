@@ -64,10 +64,10 @@ fn header(mut buffer: &[u8]) {
 
         let output_path = format!("output/{}{}", &filename, suffix);
         // println!("Writing: {}", output_path);
-        // println!(
-        //     "Writing: {} Offset: {} Size: {} Encrypted: {}",
-        //     output_path, offset, filesize, encrypted
-        // );
+        println!(
+            "Writing: {} Offset: {} Size: {} Encrypted: {}",
+            output_path, offset, filesize, encrypted
+        );
 
         // write stupid file
         let filebuffer = &whole_file[(offset as usize)..((filesize + offset) as usize)];
@@ -136,7 +136,7 @@ fn decrypt(bytes: &[u8], filesize: u32) -> Vec<u8> {
     // println!("e_string_pos_b {}", e_string_pos_b);
     // print!("key2[e_string_pos_b] {:x}", key2[e_string_pos_b]);
 
-    for byte in bytes.iter() {
+    for (byte_position, byte) in bytes.iter().enumerate() {
         if e_string_pos_b >= key2.len() {
             panic!(
                 "index ({}) out of bounds: key2 is {:?}",
@@ -170,7 +170,7 @@ fn decrypt(bytes: &[u8], filesize: u32) -> Vec<u8> {
         } else {
             e_string_no += 2;
             e_string_no &= 0x7F;
-            if (e_nibbleswap != 0) {
+            if e_nibbleswap != 0 {
                 let key1 = mul_unsigned_high(ENC_KEY_1, e_string_no as i32);
                 let key2 = mul_unsigned_high(ENC_KEY_2, e_string_no as i32);
                 e_nibbleswap = 0;
@@ -187,7 +187,28 @@ fn decrypt(bytes: &[u8], filesize: u32) -> Vec<u8> {
                 //     e_string_pos_a, e_string_pos_b
                 // );
             } else {
-                unimplemented!();
+                // panic!(
+                //     "found panic point at byte pos {} filesize {}",
+                //     byte_position, filesize
+                // );
+                // return return_data;
+
+                // Key1 = MulUnsignedHigh(ENC_KEY_1, eStringNo);
+                let key1 = mul_unsigned_high(ENC_KEY_1, e_string_no as i32);
+                let key1: u32 = u32::from_be_bytes([key1[0], key1[1], key1[2], key1[3]]);
+                // Key2 = MulUnsignedHigh(ENC_KEY_2, eStringNo);
+                let key2 = mul_unsigned_high(ENC_KEY_2, e_string_no as i32);
+                let key2: u32 = u32::from_be_bytes([key2[0], key2[1], key2[2], key2[3]]);
+                // eNybbleSwap = 1;
+                e_nibbleswap = 1;
+                // Temp1 = Key2 + (eStringNo - Key2) / 2;
+                temp1 = key2 + (e_string_no - key2) / 2;
+                // Temp2 = Key1 / 8 * 3;
+                temp2 = key1 / 8 * 3;
+                // eStringPosB = eStringNo - Temp1 / 4 * 7;
+                e_string_pos_b = (e_string_no - temp1 / 4 * 7) as usize;
+                // eStringPosA = eStringNo - Temp2 * 4 + 3;
+                e_string_pos_a = (e_string_no - temp2 * 4 + 3) as usize;
             }
         }
     }
