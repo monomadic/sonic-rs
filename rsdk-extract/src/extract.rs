@@ -5,7 +5,7 @@ use std::path::Path;
 
 type ExtractResult<T> = Result<T, Box<dyn std::error::Error>>;
 
-pub fn load<P: AsRef<Path>>(path: P) -> ExtractResult<()> {
+pub fn read<P: AsRef<Path>>(path: P) -> ExtractResult<()> {
     // let mut offset = 0usize;
     let mut buffer = Vec::new();
     let mut file = File::open(path)?;

@@ -1,16 +1,6 @@
 use crate::container::{FileDescriptionBlock, RSDKContainer};
 use nom::IResult;
 
-// pub(crate) fn container<'a>(i: &'a [u8]) -> IResult<&[u8], RSDKContainer> {
-//     nom::sequence::tuple((
-//         nom::combinator::map(header, |(_, s)| {
-//             println!("File count: {}", s);
-//             RSDKContainer::default()
-//         }),
-//         file,
-//     ))(i)
-// }
-
 pub(crate) fn container<'a>(i: &'a [u8]) -> IResult<&[u8], RSDKContainer> {
     nom::combinator::map(
         nom::sequence::tuple((header, nom::multi::many1(file_index))),

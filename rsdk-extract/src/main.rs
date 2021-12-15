@@ -1,28 +1,19 @@
-use std::env;
+#[macro_use]
+extern crate log;
 
-mod container;
+mod args;
 mod dictionary;
 mod extract;
-mod read;
+mod gameconfig;
 
-fn main() -> std::io::Result<()> {
-    println!("RSDK Extractor");
+fn main() {
+    // set up a logger with default level 'info'
+    env_logger::Builder::from_default_env()
+        .filter_level(log::LevelFilter::Info)
+        .init();
 
-    let args: Vec<String> = env::args().collect();
-
-    if let Some(filename) = args.get(1) {
-        println!("Reading {}", filename);
-
-        // let file = std::fs::read(filename)?;
-        // match read::container(&file) {
-        match extract::load(&filename) {
-            Ok(s) => println!("{:?}", s),
-            Err(e) => println!("error parsing {:?}", e),
-        }
-    } else {
-        println!("Usage: rsdk-extract <filename>");
+    match args::run() {
+        Ok(_) => info!("done"),
+        Err(e) => error!("{}", e), // todo: print error properly
     }
-
-    println!("done.");
-    Ok(())
 }
