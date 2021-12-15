@@ -1,27 +1,36 @@
 use byteorder::ReadBytesExt;
-// use serde::Deserialize;
+use serde::Serialize;
+use std::collections::HashMap;
 use std::io::Read;
 
-// #[derive(Deserialize)]
-pub(crate) struct GameConfig {}
+#[derive(Serialize)]
+pub(crate) struct GameConfig {
+    title: String,
+    description: String,
+    palettes: Vec<(u8, u8, u8)>,
+    objects: HashMap<String, String>,
+}
 
-pub(crate) fn extract(mut buffer: &[u8]) {
-    let title = read_rsdk_string(&mut buffer);
-    let description = read_rsdk_string(&mut buffer);
+pub(crate) fn extract(mut buffer: &[u8]) -> GameConfig {
+    let mut game_config = GameConfig {
+        title: read_rsdk_string(&mut buffer),
+        description: read_rsdk_string(&mut buffer),
+        palettes: read_palettes(&mut buffer, 0x60),
+        objects: HashMap::new(),
+    };
 
-    println!("{:?}", [&title, &description]);
-
-    // master palette
-    read_palettes(&mut buffer, 0x60);
     // read_pallettes(&mut buffer, 8);
     let object_count = buffer.read_u8().unwrap();
-    println!("object_count: {}", object_count);
-    let objects = read_rsdk_strings(&mut buffer, object_count);
-    let object_paths = read_rsdk_strings(&mut buffer, object_count);
+    let str_objects: Vec<String> = read_rsdk_strings(&mut buffer, object_count);
+    let str_object_paths: Vec<String> = read_rsdk_strings(&mut buffer, object_count);
 
-    for (index, object) in objects.iter().enumerate() {
-        println!("{}: {}", object, object_paths[index]);
+    for index in 0..(object_count as usize) {
+        game_config
+            .objects
+            .insert(str_objects[index].clone(), str_object_paths[index].clone());
     }
+
+    game_config
 }
 
 fn read_rsdk_string(buffer: &mut &[u8]) -> String {

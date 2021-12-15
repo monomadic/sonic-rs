@@ -3,36 +3,27 @@ use structopt::StructOpt;
 use std::path::PathBuf;
 
 pub(crate) fn run() -> std::io::Result<()> {
-    println!("RSDK Extractor");
+    println!("RSDK Extractor v0.1.1\n");
 
     match Commands::from_args() {
-        Commands::Extract { input } => {}
+        Commands::Extract { input } => {
+            info!("Reading {:?}", input);
+
+            match crate::extract::read(&input) {
+                Ok(s) => println!("{:?}", s),
+                Err(e) => println!("error parsing {:?}", e),
+            }
+        }
         Commands::Process => {
+            info!("reading resources/Data/Game/GameConfig.bin");
             let file = std::fs::read("resources/Data/Game/GameConfig.bin")?;
-            crate::gameconfig::extract(&file);
+            let config = crate::gameconfig::extract(&file);
+            let toml = toml::to_string(&config).unwrap();
+            info!("writing resources/Data/Game/GameConfig.toml");
+            std::fs::write("resources/Data/Game/GameConfig.toml", toml)?;
         }
     }
 
-    // App::new("rsdk-extract")
-    //     .subcommand(App::new("extract").arg(Arg::with_name("input")))
-    //     .get_matches();
-
-    // let args: Vec<String> = env::args().collect();
-
-    // if let Some(filename) = args.get(1) {
-    //     println!("Reading {}", filename);
-
-    //     // let file = std::fs::read(filename)?;
-    //     // match container::container(&file) {
-    //     match crate::extract::load(&filename) {
-    //         Ok(s) => println!("{:?}", s),
-    //         Err(e) => println!("error parsing {:?}", e),
-    //     }
-    // } else {
-    //     println!("Usage: rsdk-extract <filename>");
-    // }
-
-    println!("done.");
     Ok(())
 }
 
