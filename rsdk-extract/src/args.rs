@@ -1,14 +1,17 @@
-use clap::{App, Arg, ArgMatches};
-use std::env;
+use structopt::StructOpt;
+// use std::env;
 use std::path::PathBuf;
 
 pub(crate) fn run() -> std::io::Result<()> {
     println!("RSDK Extractor");
 
-    let file = std::fs::read("resources/Data/Game/GameConfig.bin")?;
-    crate::gameconfig::extract(&file);
-
-    // let opts: Opts = Opts::parse();
+    match Commands::from_args() {
+        Commands::Extract { input } => {}
+        Commands::Process => {
+            let file = std::fs::read("resources/Data/Game/GameConfig.bin")?;
+            crate::gameconfig::extract(&file);
+        }
+    }
 
     // App::new("rsdk-extract")
     //     .subcommand(App::new("extract").arg(Arg::with_name("input")))
@@ -33,26 +36,18 @@ pub(crate) fn run() -> std::io::Result<()> {
     Ok(())
 }
 
-// #[derive(Parser)]
-// #[clap(name = "rsdk-extract")]
-// pub struct Opts {
-//     #[clap(subcommand)]
-//     command: Command,
-// }
-
-// #[derive(Parser)]
-// enum Command {
-//     #[clap()]
-//     Extract {
-//         /// Input file
-//         #[clap(
-//             parse(from_os_str),
-//             short = 'i',
-//             long = "input",
-//             default_value = "Data.rsdk"
-//         )]
-//         input: PathBuf,
-//     },
-//     #[clap()]
-//     Process,
-// }
+#[derive(StructOpt)]
+#[structopt(name = "extract", about = "RSDK Extractor")]
+enum Commands {
+    Extract {
+        /// Input file
+        #[structopt(
+            parse(from_os_str),
+            short = "i",
+            long = "input",
+            default_value = "Data.rsdk"
+        )]
+        input: PathBuf,
+    },
+    Process,
+}
