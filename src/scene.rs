@@ -64,7 +64,16 @@ impl Scene {
                 // ResetBackgroundSettings();
                 // LoadStageFiles();
             }
+            StageMode::Normal => {}
             _ => unimplemented!(),
         }
+    }
+
+    fn set_active_palette(&mut self, new_active_palette: u8, start_line: u32, end_line: u32) {
+        // for line in start_line..end_line {
+        //     // if line < SCREEN_YSIZE
+        //     gfxLineBuffer[line] = new_active_palette;
+        //     self.active_palette = fullPalette[gfxLineBuffer[0]];
+        // }
     }
 }
