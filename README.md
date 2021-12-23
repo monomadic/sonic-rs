@@ -19,6 +19,7 @@ Project goals differ from RSDK-related decompilations in the following ways:
 - [x] RSDKv4 archives
   - [x] Unpacking
   - [x] Decryption
+  - [ ] Processing of assets (.bin -> .toml)
 - [ ] RSDKv5
 - [ ] Basic game engine (framebuffer)
 - [ ] Sonic 1

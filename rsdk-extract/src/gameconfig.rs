@@ -1,4 +1,4 @@
-use byteorder::ReadBytesExt;
+use byteorder::{LittleEndian, ReadBytesExt};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::io::Read;
@@ -8,7 +8,8 @@ pub(crate) struct GameConfig {
     title: String,
     description: String,
     palettes: Vec<(u8, u8, u8)>,
-    objects: HashMap<String, String>,
+    objects: HashMap<String, String>, // todo: rename to scripts
+    globals: HashMap<String, u32>,
 }
 
 pub(crate) fn extract(mut buffer: &[u8]) -> GameConfig {
@@ -17,10 +18,12 @@ pub(crate) fn extract(mut buffer: &[u8]) -> GameConfig {
         description: read_rsdk_string(&mut buffer),
         palettes: read_palettes(&mut buffer, 0x60),
         objects: HashMap::new(),
+        globals: HashMap::new(),
     };
 
     // read_pallettes(&mut buffer, 8);
     let object_count = buffer.read_u8().unwrap();
+    info!("{} objects detected.", object_count);
     let str_objects: Vec<String> = read_rsdk_strings(&mut buffer, object_count);
     let str_object_paths: Vec<String> = read_rsdk_strings(&mut buffer, object_count);
 
@@ -28,6 +31,16 @@ pub(crate) fn extract(mut buffer: &[u8]) -> GameConfig {
         game_config
             .objects
             .insert(str_objects[index].clone(), str_object_paths[index].clone());
+    }
+
+    let object_count = buffer.read_u8().unwrap();
+    info!("{} globals detected.", object_count);
+
+    for _index in 0..(object_count as usize) {
+        let name = read_rsdk_string(&mut buffer);
+        let value = buffer.read_u32::<LittleEndian>().unwrap();
+        info!("{}: {}", name, value);
+        game_config.globals.insert(name, value);
     }
 
     game_config
