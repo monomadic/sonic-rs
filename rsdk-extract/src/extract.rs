@@ -6,7 +6,6 @@ use std::path::Path;
 type ExtractResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 pub fn read<P: AsRef<Path>>(path: P) -> ExtractResult<()> {
-    // let mut offset = 0usize;
     let mut buffer = Vec::new();
     let mut file = File::open(path)?;
 
@@ -18,7 +17,7 @@ pub fn read<P: AsRef<Path>>(path: P) -> ExtractResult<()> {
 /** Read header data (8 bytes) */
 fn header(mut buffer: &[u8]) {
     let md5 = format!("{:x}", ::md5::compute(buffer));
-    let version = crate::detect::detect_version(md5);
+    let version = crate::detect::detect_version(&md5);
     if let Some(version) = version {
         info!("Md5 checksum match: {}", version);
     }
@@ -51,35 +50,28 @@ fn header(mut buffer: &[u8]) {
 
         let md5sum = md5.iter().map(|h| format!("{:08x}", h)).collect::<String>();
 
-        // let md5hash = ::md5::Digest::from(md5);
-        // println!("hashhh {:x}", md5);
-
         let offset = buffer.read_u32::<LittleEndian>().unwrap();
         let filesize_encoded = buffer.read_u32::<LittleEndian>().unwrap();
         let encrypted: bool = (filesize_encoded & 0x80000000) == 0x80000000;
         let filesize = filesize_encoded & 0x7FFFFFFF;
-        // println!(
-        //     "Checksum: {} Offset: {} Size: {} Encrypted: {}",
-        //     md5sum, offset, filesize, encrypted
-        // );
 
         let filename: &str = dictionary.get(&*md5sum).unwrap_or(&md5sum);
-        // let suffix = if encrypted { ".decrypted" } else { "" };
         let suffix = "";
 
         let output_path = format!(
             "resources/{}{}{}",
-            &version.unwrap_or(""),
+            &version
+                .map(|version| format!("{}/", version))
+                .unwrap_or(String::from("")),
             &filename,
             suffix
         );
-        // println!("Writing: {}", output_path);
-        // println!(
-        //     "Writing: {} Offset: {} Size: {} Encrypted: {}",
-        //     output_path, offset, filesize, encrypted
-        // );
 
-        // write stupid file
+        info!(
+            "Writing: {} Offset: {} Size: {} Encrypted: {}",
+            output_path, offset, filesize, encrypted
+        );
+
         let filebuffer = &whole_file[(offset as usize)..((filesize + offset) as usize)];
         let mut file: Vec<u8> = Vec::from(filebuffer);
 
@@ -102,34 +94,16 @@ fn header(mut buffer: &[u8]) {
         file_buffer.write_all(&file).unwrap();
     }
 
-    // LittleEndian::read_u16(load_part(2)) as usize;
-
     generate_eload_keys(4388);
 }
-
-// /** Read a file index record (20 bytes) () */
-// fn read_index(mut buffer: &[u8]) {
-//     let mut checksumbuffer = [0; 16];
-//     let checksum = buffer.read_exact(&mut checksumbuffer).unwrap();
-//     let offset = buffer.read_u32::<LittleEndian>().unwrap();
-//     let filesize_encoded = buffer.read_u32::<LittleEndian>().unwrap();
-//     let encrypted: bool = (filesize_encoded & 0x80000000) == 0x80000000;
-//     let filesize = filesize_encoded & 0x7FFFFFFF;
-
-//     println!(
-//         "Checksum: {:?}\nOffset: {}\nSize: {}\nEncrypted: {}",
-//         checksum, offset, filesize, encrypted
-//     );
-// }
 
 static ENC_KEY_2: u32 = 0x24924925;
 static ENC_KEY_1: u32 = 0xAAAAAAAB;
 
 /** XOR-based crypt */
 fn decrypt(bytes: &[u8], filesize: u32) -> Vec<u8> {
-    let mut tmp_byte: u32 = 0;
-    // let filesize: u32 = bytes.len() as u32;
-    let (mut key1, mut key2) = generate_eload_keys(filesize);
+    let mut tmp_byte: u32;
+    let (key1, key2) = generate_eload_keys(filesize);
 
     let mut e_string_no: u32 = (filesize / 4) & 0x7F; // encrypted string number?
     let mut e_string_pos_a = 0_usize;
@@ -139,14 +113,12 @@ fn decrypt(bytes: &[u8], filesize: u32) -> Vec<u8> {
 
     let mut return_data: Vec<u8> = Vec::with_capacity(filesize as usize);
 
-    let mut temp1 = 0;
-    let mut temp2 = 0;
+    let mut temp1;
+    let mut temp2;
 
     print!("filesize {} e_string_no {} ", filesize, e_string_no);
-    // println!("e_string_pos_b {}", e_string_pos_b);
-    // print!("key2[e_string_pos_b] {:x}", key2[e_string_pos_b]);
 
-    for (byte_position, byte) in bytes.iter().enumerate() {
+    for (_byte_position, byte) in bytes.iter().enumerate() {
         if e_string_pos_b >= key2.len() {
             panic!(
                 "index ({}) out of bounds: key2 is {:?}",
@@ -186,38 +158,19 @@ fn decrypt(bytes: &[u8], filesize: u32) -> Vec<u8> {
                 e_nibbleswap = 0;
                 let tmpkey1: u32 = u32::from_be_bytes([key1[0], key1[1], key1[2], key1[3]]);
                 let tmpkey2: u32 = u32::from_be_bytes([key2[0], key2[1], key2[2], key2[3]]);
-                // println!("{:x}, {}", (e_string_no - tmpkey2) / 2, tmpkey2);
                 temp1 = tmpkey2 + (e_string_no - tmpkey2) / 2; // convert vec<u8> to u32??
                 temp2 = tmpkey1 / 8 * 3;
-                // println!("\n    ---temp1 {}, temp2 {}", temp1, temp2);
                 e_string_pos_a = (e_string_no - temp1 / 4 * 7) as usize;
                 e_string_pos_b = (e_string_no - temp2 * 4 + 2) as usize;
-                // println!(
-                //     "\n    ---e_string_pos_a {}, e_string_pos_b {}",
-                //     e_string_pos_a, e_string_pos_b
-                // );
             } else {
-                // panic!(
-                //     "found panic point at byte pos {} filesize {}",
-                //     byte_position, filesize
-                // );
-                // return return_data;
-
-                // Key1 = MulUnsignedHigh(ENC_KEY_1, eStringNo);
                 let key1 = mul_unsigned_high(ENC_KEY_1, e_string_no as i32);
                 let key1: u32 = u32::from_be_bytes([key1[0], key1[1], key1[2], key1[3]]);
-                // Key2 = MulUnsignedHigh(ENC_KEY_2, eStringNo);
                 let key2 = mul_unsigned_high(ENC_KEY_2, e_string_no as i32);
                 let key2: u32 = u32::from_be_bytes([key2[0], key2[1], key2[2], key2[3]]);
-                // eNybbleSwap = 1;
                 e_nibbleswap = 1;
-                // Temp1 = Key2 + (eStringNo - Key2) / 2;
                 temp1 = key2 + (e_string_no - key2) / 2;
-                // Temp2 = Key1 / 8 * 3;
                 temp2 = key1 / 8 * 3;
-                // eStringPosB = eStringNo - Temp1 / 4 * 7;
                 e_string_pos_b = (e_string_no - temp1 / 4 * 7) as usize;
-                // eStringPosA = eStringNo - Temp2 * 4 + 3;
                 e_string_pos_a = (e_string_no - temp2 * 4 + 3) as usize;
             }
         }
@@ -226,12 +179,12 @@ fn decrypt(bytes: &[u8], filesize: u32) -> Vec<u8> {
     return_data
 }
 
-fn as_u32_le(array: &[u8; 4]) -> u32 {
-    ((array[0] as u32) << 0)
-        + ((array[1] as u32) << 8)
-        + ((array[2] as u32) << 16)
-        + ((array[3] as u32) << 24)
-}
+// fn as_u32_le(array: &[u8; 4]) -> u32 {
+//     ((array[0] as u32) << 0)
+//         + ((array[1] as u32) << 8)
+//         + ((array[2] as u32) << 16)
+//         + ((array[3] as u32) << 24)
+// }
 
 fn mul_unsigned_high(a: u32, b: i32) -> Vec<u8> {
     (((a as i64) * (b as i64) >> 32 as i64) as i32)
