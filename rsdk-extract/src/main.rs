@@ -2,6 +2,7 @@
 extern crate log;
 
 mod args;
+mod detect;
 mod dictionary;
 mod extract;
 mod gameconfig;

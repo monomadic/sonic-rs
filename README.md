@@ -2,15 +2,10 @@
 
 Reverse engineered Sonic, but building a new, entirely open, moddable engine instead of RSDK.
 
-Project goals differ from RSDK-related decompilations in the following ways:
-- No bytecode or vm scripting languages (just rust)
-- Far more cross-platform (simple rust that can target any platform including wasm)
-  - Initially, basic framebuffer engine (no SDL dependencies etc)
-- Easier to install (cargo install, wasmer, etc)
-  - Will always be as simple as a `cargo install sonic` when released
-- Emphasis on open formats, extensibility, modding
-  - Unpacks RSDK archives into basic file structure which is included in the build
-  - Simply editing .gif or .png or the rust code will mod the project (no complex unpackers or encryption)
+## Goals
+- Pure rust sonic implementation with few dependencies
+- Run absolutely anywhere (baseline software pixel framebuffer engine)
+- Emphasis on open formats, clear code, extensibility, and modding
 
 **You'll need a retail sonic to extract the assets.**
 
@@ -21,7 +16,10 @@ Project goals differ from RSDK-related decompilations in the following ways:
   - [x] Decryption
   - [ ] Processing of assets (.bin -> .toml)
 - [ ] RSDKv5
-- [ ] Basic game engine (framebuffer)
+- [ ] Basic game engine
+  - [ ] Software Renderer (minifb)
+  - [ ] Hardware Renderer (pixel)
+  - [ ] Audio
 - [ ] Sonic 1
 - [ ] Sonic 2
 - [ ] Sonic CD

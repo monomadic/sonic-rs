@@ -17,6 +17,11 @@ pub fn read<P: AsRef<Path>>(path: P) -> ExtractResult<()> {
 
 /** Read header data (8 bytes) */
 fn header(mut buffer: &[u8]) {
+    let md5 = format!("{:x}", ::md5::compute(buffer));
+    let version = crate::detect::detect_version(md5);
+    if let Some(version) = version {
+        info!("Md5 checksum match: {}", version);
+    }
     let dictionary = crate::dictionary::generate();
 
     let whole_file = &buffer.clone();
@@ -62,12 +67,17 @@ fn header(mut buffer: &[u8]) {
         // let suffix = if encrypted { ".decrypted" } else { "" };
         let suffix = "";
 
-        let output_path = format!("resources/{}{}", &filename, suffix);
-        // println!("Writing: {}", output_path);
-        println!(
-            "Writing: {} Offset: {} Size: {} Encrypted: {}",
-            output_path, offset, filesize, encrypted
+        let output_path = format!(
+            "resources/{}{}{}",
+            &version.unwrap_or(""),
+            &filename,
+            suffix
         );
+        // println!("Writing: {}", output_path);
+        // println!(
+        //     "Writing: {} Offset: {} Size: {} Encrypted: {}",
+        //     output_path, offset, filesize, encrypted
+        // );
 
         // write stupid file
         let filebuffer = &whole_file[(offset as usize)..((filesize + offset) as usize)];

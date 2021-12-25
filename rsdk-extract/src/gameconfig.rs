@@ -19,7 +19,7 @@ pub(crate) struct StageConfig {
     folder: String,
     id: String,
     name: String,
-    mode: u8,
+    highlighted: u8, // fixme: should be boolean
 }
 
 pub(crate) fn extract(mut buffer: &[u8]) -> GameConfig {
@@ -82,7 +82,7 @@ pub(crate) fn extract(mut buffer: &[u8]) -> GameConfig {
                 folder: read_rsdk_string(&mut buffer),
                 id: read_rsdk_string(&mut buffer),
                 name: read_rsdk_string(&mut buffer),
-                mode: buffer.read_u8().unwrap(),
+                highlighted: buffer.read_u8().unwrap(),
             };
             info!("{}: {}", stage.folder, stage.name);
             game_config.stages.push(stage);
