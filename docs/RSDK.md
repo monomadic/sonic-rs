@@ -12,6 +12,18 @@
 - `SceneInfo` level data
   - Stored as SceneInfo stageList[STAGELIST_MAX][0x100]; in Scene.cpp:10
 
+## RSDK Functions
+- SpriteFrame(int pivotX, int pivot, int width, int height, int sprX, int sprY)
+  - SpriteFrame(-125, -29, WIDTH, HEIGHT, -X, -Y)
+
+## Script Load Order Sonic 1
+- Stages/Title:
+  - Title/Sega.txt
+    - Loads "Data/Sprites/Title/Title.gif"
+  - Title/SonicTeam.txt
+  - Title/Logo.txt
+  - Title/Start.txt
+
 ## Program Flow
 
 - RetroEngine::Init() // `RetroEngine.cpp`

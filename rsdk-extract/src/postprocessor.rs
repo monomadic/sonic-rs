@@ -10,3 +10,7 @@ pub(crate) fn run(resource_dir: &str) -> std::io::Result<()> {
 
     Ok(())
 }
+
+// fn process_stage_config(path: &str) -> std::io::Result<()> {
+//     let file = std::fs::read(path)?;
+// }
