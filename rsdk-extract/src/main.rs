@@ -6,6 +6,7 @@ mod detect;
 mod dictionary;
 mod extract;
 mod gameconfig;
+mod postprocessor;
 
 fn main() {
     // set up a logger with default level 'info'

@@ -2,26 +2,18 @@ use structopt::StructOpt;
 // use std::env;
 use std::path::PathBuf;
 
-pub(crate) fn run() -> std::io::Result<()> {
+pub(crate) fn run() -> Result<(), Box<dyn std::error::Error>> {
     println!("RSDK Extractor v0.1.1\n");
 
-    match Commands::from_args() {
-        Commands::Extract { input } => {
-            info!("Reading {:?}", input);
+    let args = Args::from_args();
+    let input = args.input;
 
-            match crate::extract::read(&input) {
-                Ok(s) => println!("{:?}", s),
-                Err(e) => println!("error parsing {:?}", e),
-            }
-        }
-        Commands::Process => {
-            info!("reading resources/Data/Game/GameConfig.bin");
-            let file = std::fs::read("resources/Data/Game/GameConfig.bin")?;
-            let config = crate::gameconfig::extract(&file);
-            let json = serde_json::to_string(&config).unwrap();
-            info!("writing resources/Data/Game/GameConfig.json");
-            std::fs::write("resources/Data/Game/GameConfig.json", json)?;
-        }
+    info!("Reading {:?}", input);
+
+    crate::extract::read(&input)?;
+
+    if !args.skip_postprocessor {
+        crate::postprocessor::run()?;
     }
 
     Ok(())
@@ -29,16 +21,12 @@ pub(crate) fn run() -> std::io::Result<()> {
 
 #[derive(StructOpt)]
 #[structopt(name = "extract", about = "RSDK Extractor")]
-enum Commands {
-    Extract {
-        /// Input file
-        #[structopt(
-            parse(from_os_str),
-            short = "i",
-            long = "input",
-            default_value = "Data.rsdk"
-        )]
-        input: PathBuf,
-    },
-    Process,
+struct Args {
+    /// Input file
+    #[structopt(parse(from_os_str), default_value = "Data.rsdk")]
+    input: PathBuf,
+
+    /// Skip postprocessing files after extraction
+    #[structopt(long = "skip-postprocessor")]
+    skip_postprocessor: bool,
 }
