@@ -3,5 +3,5 @@ mod engine;
 mod scene;
 
 fn main() {
-    let engine = engine::Game::default();
+    display::run(engine::Game::default());
 }

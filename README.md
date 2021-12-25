@@ -3,11 +3,17 @@
 Reverse engineered Sonic, but building a new, entirely open, moddable engine instead of RSDK.
 
 ## Goals
-- Pure rust sonic implementation with few dependencies
-- Run absolutely anywhere (baseline software pixel framebuffer engine)
+- Pure rust Sonic implementation with fewest dependencies possible
+- Run anywhere cargo builds (baseline software pixel framebuffer engine)
 - Emphasis on open formats, clear code, extensibility, and modding
+- Fastest, lowest resource open Sonic implementation ever
 
 **You'll need a retail sonic to extract the assets.**
+
+## Why?
+- Learn how sonic was built and perhaps improve upon and extend its design.
+- A starting point for sonic modders or someone wanting to create a retro style game.
+- Research adapting older game architecture to rust.
 
 ## Progress
 - [ ] RSDKv3
@@ -26,6 +32,8 @@ Reverse engineered Sonic, but building a new, entirely open, moddable engine ins
 - [ ] Sonic 1
 - [ ] Sonic 2
 - [ ] Sonic CD
+
+<p><img align="right" src="progress.png"></p>
 
 ## RSDK Extractor
 

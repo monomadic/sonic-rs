@@ -20,9 +20,46 @@
 - Stages/Title:
   - Title/Sega.txt
     - Loads "Data/Sprites/Title/Title.gif"
+      - Sprites the SEGA logo and pink alpha mask image (which is wider).
   - Title/SonicTeam.txt
   - Title/Logo.txt
   - Title/Start.txt
+- Stages/Zone01:
+  - GHZ/GHZSetup.txt
+  - Global/PSwitch_V.txt
+  - Global/PSwitch_H.txt
+  - Global/PSwitch_Loop.txt
+  - GHZ/Rock.txt
+  - GHZ/Bridge.txt
+  - GHZ/BridgeEnd.txt
+  - GHZ/SwingPlat.txt
+  - GHZ/FPlatform.txt
+  - GHZ/HPlatform.txt
+  - GHZ/VPlatform.txt
+  - GHZ/VPlatform2.txt
+  - GHZ/BreakWall.txt
+  - GHZ/CLedgeLeft.txt
+  - GHZ/CLedgeRight.txt
+  - GHZ/SpikeLogs.txt
+  - GHZ/TubeSwitch.txt
+  - Enemies/BuzzBomber.txt
+  - Enemies/BuzzBomberShot.txt
+  - Enemies/Motobug.tx
+  - Enemies/MotobugExhaust.txt
+  - Enemies/Chopper.txt
+  - Enemies/Crabmeat.txt
+  - Enemies/CrabmeatShot.txt
+  - Enemies/NewtronShoot.txt
+  - Enemies/NewtronShot.txt
+  - Enemies/NewtronFly.txt
+  - GHZ/Eggman.txt- GHZ/BossLights.txt
+  - GHZ/BossChain.txt
+  - GHZ/WreckingBall.txt
+  - Animals/Pocky.txt
+  - Animals/Flicky.txt
+  - GHZ/WaterfallSound.txt
+  - Enemies/Splats.txt
+  - GHZ/CheckeredBall.txt
 
 ## Program Flow
 
