@@ -5,22 +5,30 @@ use std::path::Path;
 
 type ExtractResult<T> = Result<T, Box<dyn std::error::Error>>;
 
-pub fn read<P: AsRef<Path>>(path: P) -> ExtractResult<()> {
+pub fn read<P: AsRef<Path>>(path: P) -> ExtractResult<String> {
     let mut buffer = Vec::new();
     let mut file = File::open(path)?;
 
     file.read_to_end(&mut buffer)?;
-    header(&mut buffer);
-    Ok(())
-}
 
-/** Read header data (8 bytes) */
-fn header(mut buffer: &[u8]) {
-    let md5 = format!("{:x}", ::md5::compute(buffer));
+    // detect version with md5 sum
+    let md5 = format!("{:x}", ::md5::compute(&buffer));
     let version = crate::detect::detect_version(&md5);
     if let Some(version) = version {
         info!("Md5 checksum match: {}", version);
     }
+    let output_path = format!(
+        "resources/{}",
+        &version
+            .map(|version| format!("{}/", version))
+            .unwrap_or(String::from("")),
+    );
+    header(&mut buffer, output_path.clone());
+    Ok(output_path)
+}
+
+/** Read header data (8 bytes) */
+fn header(mut buffer: &[u8], output_path: String) {
     let dictionary = crate::dictionary::generate();
 
     let whole_file = &buffer.clone();
@@ -58,14 +66,7 @@ fn header(mut buffer: &[u8]) {
         let filename: &str = dictionary.get(&*md5sum).unwrap_or(&md5sum);
         let suffix = "";
 
-        let output_path = format!(
-            "resources/{}{}{}",
-            &version
-                .map(|version| format!("{}/", version))
-                .unwrap_or(String::from("")),
-            &filename,
-            suffix
-        );
+        let output_path = format!("resources/{}{}{}", &output_path, &filename, suffix);
 
         info!(
             "Writing: {} Offset: {} Size: {} Encrypted: {}",

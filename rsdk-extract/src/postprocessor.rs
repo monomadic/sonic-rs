@@ -1,10 +1,12 @@
-pub(crate) fn run() -> std::io::Result<()> {
-    info!("reading resources/Data/Game/GameConfig.bin");
-    let file = std::fs::read("resources/Data/Game/GameConfig.bin")?;
+pub(crate) fn run(resource_dir: &str) -> std::io::Result<()> {
+    let path = format!("{}/Data/Game/GameConfig.bin", resource_dir);
+    info!("reading {}", path);
+    let file = std::fs::read(path)?;
     let config = crate::gameconfig::extract(&file);
     let json = serde_json::to_string(&config).unwrap();
-    info!("writing resources/Data/Game/GameConfig.json");
-    std::fs::write("resources/Data/Game/GameConfig.json", json)?;
+    let output_path = format!("{}/Data/Game/GameConfig.json", resource_dir);
+    info!("writing {}", output_path);
+    std::fs::write(output_path, json)?;
 
     Ok(())
 }

@@ -10,10 +10,10 @@ pub(crate) fn run() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Reading {:?}", input);
 
-    crate::extract::read(&input)?;
+    let resource_dir = crate::extract::read(&input)?;
 
     if !args.skip_postprocessor {
-        crate::postprocessor::run()?;
+        crate::postprocessor::run(&resource_dir)?;
     }
 
     Ok(())
