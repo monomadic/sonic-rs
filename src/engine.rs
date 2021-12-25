@@ -1,5 +1,6 @@
 #[derive(Default)]
 pub(crate) struct Game {
+    config: GameConfig,
     mode: GameMode,
     paused: bool,
     debug: bool,
@@ -8,6 +9,12 @@ pub(crate) struct Game {
     camera_offset: Coordinate,
     water_level: f64,
     boundary: Boundary, // not sure what this is for
+}
+
+#[derive(Default)]
+struct GameConfig {
+    window_title: String,
+    game_description: String,
 }
 
 pub(crate) enum GameMode {

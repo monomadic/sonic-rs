@@ -1,7 +1,7 @@
-mod config;
+mod display;
 mod engine;
 mod scene;
 
 fn main() {
-    println!("Hello, world!");
+    let engine = engine::Game::default();
 }

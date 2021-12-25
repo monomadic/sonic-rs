@@ -14,7 +14,10 @@ Reverse engineered Sonic, but building a new, entirely open, moddable engine ins
 - [x] RSDKv4 archives
   - [x] Unpacking
   - [x] Decryption
-  - [ ] Processing of assets (.bin -> .toml)
+  - [ ] Processing of assets (.bin -> .json)
+    - [x] GlobalConfig.bin
+    - [ ] StageConfig.bin
+    - [ ] Act<x>.bin
 - [ ] RSDKv5
 - [ ] Basic game engine
   - [ ] Software Renderer (minifb)
