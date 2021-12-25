@@ -51,7 +51,7 @@ pub(crate) fn run(mut game: Game) {
     // let u32_buffer: Vec<u32> = buffer.iter().map(|v| u32::from(v)).collect();
 
     let mut window = Window::new(
-        "Test - ESC to exit",
+        &game.config.window_title,
         width,
         height,
         WindowOptions::default(),

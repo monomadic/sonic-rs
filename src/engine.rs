@@ -1,6 +1,6 @@
 #[derive(Default)]
 pub(crate) struct Game {
-    config: GameConfig,
+    pub(crate) config: GameConfig,
     mode: GameMode,
     paused: bool,
     debug: bool,
@@ -13,7 +13,7 @@ pub(crate) struct Game {
 
 #[derive(Default)]
 struct GameConfig {
-    window_title: String,
+    pub(crate) window_title: String,
     game_description: String,
 }
 
