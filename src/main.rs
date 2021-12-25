@@ -1,5 +1,6 @@
 mod display;
 mod engine;
+mod image;
 mod scene;
 
 fn main() {
