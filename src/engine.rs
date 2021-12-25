@@ -11,10 +11,18 @@ pub(crate) struct Game {
     boundary: Boundary, // not sure what this is for
 }
 
-#[derive(Default)]
-struct GameConfig {
+pub(crate) struct GameConfig {
     pub(crate) window_title: String,
     game_description: String,
+}
+
+impl Default for GameConfig {
+    fn default() -> Self {
+        Self {
+            window_title: String::from("Sonic"),
+            game_description: String::from("Description"),
+        }
+    }
 }
 
 pub(crate) enum GameMode {
