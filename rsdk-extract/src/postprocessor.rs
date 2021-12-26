@@ -32,11 +32,12 @@ fn process_act_file(input: &str) -> std::io::Result<()> {
 
     info!("reading {}", input);
     let mut buffer: &[u8] = &*std::fs::read(input)?;
+    info!("read {} bytes", buffer.len());
 
     info!("writing {}", output);
     let mut file = std::fs::File::create(output).unwrap();
-    let title = read_rsdk_string(&mut buffer);
-    writeln!(&mut file, "title={}", title)?;
+
+    writeln!(&mut file, "title={}", read_rsdk_string(&mut buffer))?;
 
     for index in 0..4 {
         let line = format!("ActiveLayer{}={}", index, buffer.read_u8()?);
@@ -92,8 +93,8 @@ fn process_act_file(input: &str) -> std::io::Result<()> {
 
     info!("Level map with {} blocks", (stage_height * stage_width));
     write!(&mut file, "\n\n")?;
-    for _y in 0..(stage_height - 1) {
-        for _x in 0..(stage_width - 1) {
+    for _y in 0..stage_height {
+        for _x in 0..stage_width {
             // 128x128 Block number is 16-bit Little-Endian in RSDKv4
             let block_number: u16 = buffer.read_u16::<LittleEndian>()?;
 
@@ -170,10 +171,13 @@ fn process_act_file(input: &str) -> std::io::Result<()> {
         write!(&mut file, "\n")?;
     }
 
-    // for _ in 0..object_count {
-    //     let object_type: u8 = buffer.read_u8()?;
-    //     println!("{:?}", (object_type));
-    // }
+    if buffer.len() > 0 {
+        error!(
+            "{} bytes leftover in file! {:?}",
+            buffer.len(),
+            &buffer[0..4]
+        );
+    }
 
     Ok(())
 }
