@@ -112,6 +112,8 @@
               - LoadActLayout()
                 - LoadActFile()
                   - `Data/Stages/<folder>/Act<id>.bin`
+                  - stage map is a 2D array of chunk ids (TileLayer) in stageLayouts[0].tiles[id] / MapLayout[x][y]
+                  - loads objects into Entity *object = &objectEntityList[32];
                   - ...
               - Init3DFloorBuffer(0)
               - ProcessStartupObjects()

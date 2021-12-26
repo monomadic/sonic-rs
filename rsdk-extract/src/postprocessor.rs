@@ -19,12 +19,57 @@ pub(crate) fn run(resource_dir: &str) -> std::io::Result<()> {
     process_act_file(&format!("{}Data/Stages/Zone01/Act2", resource_dir))?;
     process_act_file(&format!("{}Data/Stages/Zone01/Act3", resource_dir))?;
 
+    process_tiles(&format!("{}Data/Stages/Zone01/128x128Tiles", resource_dir))?;
+
     Ok(())
 }
 
 // fn process_stage_config(path: &str) -> std::io::Result<()> {
 //     let file = std::fs::read(path)?;
 // }
+
+// #[allow(arithmetic_overflow)]
+fn process_tiles(input: &str) -> std::io::Result<()> {
+    use std::ops::Shl;
+    let output = format!("{}.txt", input);
+    let input = format!("{}.bin", input);
+    let tilefile = format!("{}.tiles.txt", input);
+    let mut buffer: &[u8] = &*std::fs::read(input)?;
+    let mut file = std::fs::File::create(output).unwrap();
+    let mut tilefile = std::fs::File::create(tilefile).unwrap();
+    info!("Read {} bytes.", buffer.len());
+
+    let chunks = [0; 511]; // 512 total chunks
+
+    for _ in 0..511 {
+        for _x in 0..7 {
+            // 16 x 16 grid within a chunk
+            for _y in 0..7 {
+                let mut entry = [buffer.read_u8()?, buffer.read_u8()?, buffer.read_u8()?];
+                entry[0] -= (entry[0] >> 6) << 6;
+
+                write!(&mut file, "visualPlane:{},", entry[0] >> 4);
+                entry[0] -= 16 * (entry[0] >> 4);
+
+                write!(&mut file, "direction:{},", entry[0] >> 4);
+                entry[0] -= 4 * (entry[0] >> 2);
+
+                let entry_0_shifted = entry[0].checked_shl(8).unwrap_or(0) as u16;
+                let tile_16x16: u16 = entry_0_shifted + entry[1] as u16;
+                write!(&mut file, "tile_16x16:{},", tile_16x16);
+                write!(&mut tilefile, "{:3} ", tile_16x16);
+
+                let collision_flags: [u8; 2] = [entry[2] >> 4, entry[2] - ((entry[2] >> 4) << 4)];
+                write!(&mut file, "collisionFlags:{:?} ", collision_flags);
+            }
+            write!(&mut file, "\n");
+            write!(&mut tilefile, " | ");
+        }
+        write!(&mut file, "\n");
+    }
+
+    Ok(())
+}
 
 fn process_act_file(input: &str) -> std::io::Result<()> {
     let output = format!("{}.txt", input);
