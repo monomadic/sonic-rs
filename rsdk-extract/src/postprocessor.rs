@@ -63,7 +63,7 @@ fn process_tiles(input: &str) -> std::io::Result<()> {
                 write!(&mut file, "collisionFlags:{:?} ", collision_flags);
             }
             write!(&mut file, "\n");
-            write!(&mut tilefile, " | ");
+            // write!(&mut tilefile, " | ");
         }
         write!(&mut file, "\n");
     }
