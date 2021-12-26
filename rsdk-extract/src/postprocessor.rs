@@ -1,9 +1,6 @@
 use byteorder::{LittleEndian, ReadBytesExt};
+use serde::Serialize;
 use std::io::Write;
-
-const TILELAYER_CHUNK_W: u32 = 0x100;
-const TILELAYER_CHUNK_H: u32 = 0x100;
-const TILELAYER_CHUNK_MAX: u32 = 0x10000;
 
 pub(crate) fn run(resource_dir: &str) -> std::io::Result<()> {
     // let path = format!("{}/Data/Game/GameConfig.bin", resource_dir);
@@ -28,45 +25,69 @@ pub(crate) fn run(resource_dir: &str) -> std::io::Result<()> {
 //     let file = std::fs::read(path)?;
 // }
 
-// #[allow(arithmetic_overflow)]
+//** 16x16 pixel tile */
+#[derive(Serialize, Clone, Default)]
+struct Tile16 {
+    /** if tile is on high or low layer */
+    plane: u8,
+    /** flip value of tile */
+    direction: u8,
+    /** index of the tile */
+    index: u16,
+    /** flags for collision path A */
+    collision_flag_a: u8,
+    /** flags for collision path B */
+    collision_flag_b: u8,
+}
+
+/** Collection of 16x16 Tiles */
+// type Block = [[Tile16; 8]; 8];
+// type BlockIndex = [Block; 512];
+type Block = Vec<Vec<Tile16>>;
+type BlockIndex = Vec<Block>;
+
 fn process_tiles(input: &str) -> std::io::Result<()> {
-    use std::ops::Shl;
-    let output = format!("{}.txt", input);
+    let output = format!("{}.json", input);
     let input = format!("{}.bin", input);
-    let tilefile = format!("{}.tiles.txt", input);
     let mut buffer: &[u8] = &*std::fs::read(input)?;
-    let mut file = std::fs::File::create(output).unwrap();
-    let mut tilefile = std::fs::File::create(tilefile).unwrap();
     info!("Read {} bytes.", buffer.len());
 
-    let chunks = [0; 511]; // 512 total chunks
+    let mut block_index: BlockIndex = Vec::with_capacity(512); // 512 total chunks (chunk contains 16x16 tiles)
 
     for _ in 0..511 {
-        for _x in 0..7 {
-            // 16 x 16 grid within a chunk
-            for _y in 0..7 {
+        // let mut block: Vec<Vec<Tile16>> = Vec::with_capacity(8);
+        let mut block = vec![vec![Tile16::default(); 8]; 8];
+
+        for x in 0..7 {
+            for y in 0..7 {
                 let mut entry = [buffer.read_u8()?, buffer.read_u8()?, buffer.read_u8()?];
                 entry[0] -= (entry[0] >> 6) << 6;
 
-                write!(&mut file, "visualPlane:{},", entry[0] >> 4);
+                let plane = entry[0] >> 4;
                 entry[0] -= 16 * (entry[0] >> 4);
 
-                write!(&mut file, "direction:{},", entry[0] >> 4);
+                let direction = entry[0] >> 4;
                 entry[0] -= 4 * (entry[0] >> 2);
 
                 let entry_0_shifted = entry[0].checked_shl(8).unwrap_or(0) as u16;
-                let tile_16x16: u16 = entry_0_shifted + entry[1] as u16;
-                write!(&mut file, "tile_16x16:{},", tile_16x16);
-                write!(&mut tilefile, "{:3} ", tile_16x16);
+                let index: u16 = entry_0_shifted + entry[1] as u16;
 
-                let collision_flags: [u8; 2] = [entry[2] >> 4, entry[2] - ((entry[2] >> 4) << 4)];
-                write!(&mut file, "collisionFlags:{:?} ", collision_flags);
+                let [collision_flag_a, collision_flag_b] =
+                    [entry[2] >> 4, entry[2] - ((entry[2] >> 4) << 4)];
+                block[y][x] = Tile16 {
+                    plane,
+                    direction,
+                    index,
+                    collision_flag_a,
+                    collision_flag_b,
+                };
             }
-            write!(&mut file, "\n");
-            // write!(&mut tilefile, " | ");
         }
-        write!(&mut file, "\n");
+        block_index.push(block);
     }
+
+    let json = serde_json::to_string(&block_index).unwrap();
+    std::fs::write(output, json)?;
 
     Ok(())
 }
