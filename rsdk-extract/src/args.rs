@@ -10,10 +10,15 @@ pub(crate) fn run() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Reading {:?}", input);
 
-    let resource_dir = crate::extract::read(&input)?;
+    let buffer = std::fs::read(input)?;
+    let output_path = crate::detect::output_path(&buffer);
+
+    if !args.skip_extractor {
+        crate::extract::rsdkv4(&buffer, &output_path)?;
+    }
 
     if !args.skip_postprocessor {
-        crate::postprocessor::run(&resource_dir)?;
+        crate::postprocessor::run(&output_path)?;
     }
 
     Ok(())
@@ -29,4 +34,8 @@ struct Args {
     /// Skip postprocessing files after extraction
     #[structopt(long = "skip-postprocessor")]
     skip_postprocessor: bool,
+
+    /// Skip postprocessing files after extraction
+    #[structopt(long = "skip-extractor")]
+    skip_extractor: bool,
 }
