@@ -3,7 +3,11 @@ mod engine;
 mod image;
 mod objects;
 mod scene;
+mod surface;
 
 fn main() {
-    let _ = display::run(engine::Game::default());
+    match display::run(engine::Game::default()) {
+        Ok(_) => println!("done."),
+        Err(e) => println!("Error: {:?}", e),
+    }
 }

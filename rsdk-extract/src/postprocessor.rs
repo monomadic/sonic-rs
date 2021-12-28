@@ -180,59 +180,59 @@ fn process_act_file(input: &str) -> std::io::Result<()> {
         let object_xpos: u32 = buffer.read_u32::<LittleEndian>()?;
         let object_ypos: u32 = buffer.read_u32::<LittleEndian>()?;
 
-        writeln!(&mut file, "type={}", object_type);
-        writeln!(&mut file, "subtype={}", object_subtype);
-        writeln!(&mut file, "xpos={}", object_xpos);
-        writeln!(&mut file, "ypos={}", object_ypos);
+        writeln!(&mut file, "type={}", object_type)?;
+        writeln!(&mut file, "subtype={}", object_subtype)?;
+        writeln!(&mut file, "xpos={}", object_xpos)?;
+        writeln!(&mut file, "ypos={}", object_ypos)?;
 
         if object_attribs & 0x1 != 0x0 {
-            writeln!(&mut file, "state={}", buffer.read_u32::<LittleEndian>()?);
+            writeln!(&mut file, "state={}", buffer.read_u32::<LittleEndian>()?)?;
         }
         if object_attribs & 0x2 != 0x0 {
-            writeln!(&mut file, "direction={}", buffer.read_u8()?);
+            writeln!(&mut file, "direction={}", buffer.read_u8()?)?;
         }
         if object_attribs & 0x4 != 0x0 {
-            writeln!(&mut file, "scale={}", buffer.read_u32::<LittleEndian>()?);
+            writeln!(&mut file, "scale={}", buffer.read_u32::<LittleEndian>()?)?;
         }
         if object_attribs & 0x8 != 0x0 {
-            writeln!(&mut file, "rotation={}", buffer.read_u32::<LittleEndian>()?);
+            writeln!(&mut file, "rotation={}", buffer.read_u32::<LittleEndian>()?)?;
         }
         if object_attribs & 0x10 != 0x0 {
-            writeln!(&mut file, "drawOrder={}", buffer.read_u8()?);
+            writeln!(&mut file, "drawOrder={}", buffer.read_u8()?)?;
         }
         if object_attribs & 0x20 != 0x0 {
-            writeln!(&mut file, "priority={}", buffer.read_u8()?);
+            writeln!(&mut file, "priority={}", buffer.read_u8()?)?;
         }
         if object_attribs & 0x40 != 0x0 {
-            writeln!(&mut file, "alpha={}", buffer.read_u8()?);
+            writeln!(&mut file, "alpha={}", buffer.read_u8()?)?;
         }
         if object_attribs & 0x80 != 0x0 {
-            writeln!(&mut file, "animation={}", buffer.read_u8()?);
+            writeln!(&mut file, "animation={}", buffer.read_u8()?)?;
         }
         if object_attribs & 0x100 != 0x0 {
             writeln!(
                 &mut file,
                 "animationSpeed={}",
                 buffer.read_u32::<LittleEndian>()?
-            );
+            )?;
         }
         if object_attribs & 0x200 != 0x0 {
-            writeln!(&mut file, "frame={}", buffer.read_u8()?);
+            writeln!(&mut file, "frame={}", buffer.read_u8()?)?;
         }
         if object_attribs & 0x400 != 0x0 {
-            writeln!(&mut file, "inkEffect={}", buffer.read_u8()?);
+            writeln!(&mut file, "inkEffect={}", buffer.read_u8()?)?;
         }
         if object_attribs & 0x800 != 0x0 {
-            writeln!(&mut file, "values_1={}", buffer.read_u32::<LittleEndian>()?);
+            writeln!(&mut file, "values_1={}", buffer.read_u32::<LittleEndian>()?)?;
         }
         if object_attribs & 0x1000 != 0x0 {
-            writeln!(&mut file, "values_2={}", buffer.read_u32::<LittleEndian>()?);
+            writeln!(&mut file, "values_2={}", buffer.read_u32::<LittleEndian>()?)?;
         }
         if object_attribs & 0x2000 != 0x0 {
-            writeln!(&mut file, "values_3={}", buffer.read_u32::<LittleEndian>()?);
+            writeln!(&mut file, "values_3={}", buffer.read_u32::<LittleEndian>()?)?;
         }
         if object_attribs & 0x4000 != 0x0 {
-            writeln!(&mut file, "values_4={}", buffer.read_u32::<LittleEndian>()?);
+            writeln!(&mut file, "values_4={}", buffer.read_u32::<LittleEndian>()?)?;
         }
         write!(&mut file, "\n")?;
     }
