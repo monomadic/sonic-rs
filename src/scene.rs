@@ -1,79 +1,73 @@
-pub(crate) struct Scene {
-    x_scroll_offset: u32,
-    y_scroll_offset: u32,
-    stage_mode: StageMode,
-    game_mode: GameMode,
-    active_palette: Palette,
+use crate::surface::Surface;
+
+pub trait Object {
+    fn init(&self);
+    fn next(&mut self) -> &Surface;
 }
 
-pub(crate) enum StageMode {
-    Load,
-    Normal,
-    Paused,
-    Frozen,
-    TwoPlayer,
-    NormalStep,
-    PausedStep,
-    FrozenStep,
-    TwoPlayerStep,
+pub struct SegaLogo {
+    frame: usize,
+    sega_text: Surface,
 }
 
-pub(crate) enum GameMode {
-    DevMenu,
-    MainGame,
-    InitDevMenu,
-    InitModeMenu,
-    Wait,
-    ScriptError,
-    InitPause,
-    ExitPause,
-    EndGame,
-    ResetGame,
-    ConnectTwoPlayerVS,
-    WaitTwoPlayerVS,
-    InitModMenu,
-}
-
-pub(crate) struct Palette {
-    r: u8,
-    g: u8,
-    b: u8,
-}
-
-impl Default for Scene {
-    fn default() -> Self {
-        Self {
-            x_scroll_offset: 0,
-            y_scroll_offset: 0,
-            stage_mode: StageMode::Load,
-            game_mode: GameMode::MainGame,
-            active_palette: Palette { r: 0, g: 0, b: 0 },
-        }
+impl SegaLogo {
+    fn new() -> Result<Self, Box<dyn std::error::Error>> {
+        let sprites = Surface::from_image("resources/sonic/Data/Sprites/Title/Title.gif")?;
+        let title = sprites.crop_into(323, 242, 188, 58);
+        Ok(Self {
+            frame: 0,
+            sega_text: title,
+        })
     }
 }
 
-impl Scene {
-    pub(crate) fn init_first_stage() -> Self {
-        Self { ..Self::default() }
+impl Object for SegaLogo {
+    fn init(&self) {}
+    fn next(&mut self) -> &Surface {
+        &self.sega_text
     }
+}
 
-    pub(crate) fn process(&mut self) {
-        match self.stage_mode {
-            StageMode::Load => {
-                // SetActivePalette(0, 0, 256);
-                // ResetBackgroundSettings();
-                // LoadStageFiles();
-            }
-            StageMode::Normal => {}
-            _ => unimplemented!(),
-        }
+pub struct BigSonic {
+    frame: usize,
+    frameskip: usize,
+    frames: Vec<Surface>,
+}
+
+impl BigSonic {
+    pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
+        let sprites =
+            crate::surface::Surface::from_image("resources/sonic/Data/Sprites/Title/Title.gif")?;
+
+        Ok(Self {
+            frame: 0,
+            frameskip: 4,
+            frames: vec![
+                sprites.crop_into(1, 1, 65, 88),
+                sprites.crop_into(67, 1, 74, 88),
+                sprites.crop_into(142, 1, 74, 88),
+                sprites.crop_into(217, 1, 79, 88),
+                sprites.crop_into(297, 1, 72, 88),
+                sprites.crop_into(370, 1, 81, 88),
+                sprites.crop_into(1, 90, 81, 88),
+                sprites.crop_into(83, 90, 81, 88),
+            ],
+        })
     }
+}
 
-    fn set_active_palette(&mut self, new_active_palette: u8, start_line: u32, end_line: u32) {
-        // for line in start_line..end_line {
-        //     // if line < SCREEN_YSIZE
-        //     gfxLineBuffer[line] = new_active_palette;
-        //     self.active_palette = fullPalette[gfxLineBuffer[0]];
-        // }
+impl Object for BigSonic {
+    fn init(&self) {}
+    fn next(&mut self) -> &Surface {
+        let mut sprite_frame = self.frame / self.frameskip;
+
+        if sprite_frame > self.frames.len() - 1 {
+            sprite_frame = 0;
+            self.frame = 1;
+        } else {
+            self.frame = self.frame + 1
+        };
+
+        &self.frames[sprite_frame]
     }
 }

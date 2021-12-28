@@ -102,4 +102,13 @@ impl Surface {
             }
         }
     }
+
+    pub fn as_u32(&self) -> Vec<u32> {
+        self.buffer
+            .clone()
+            .into_rgba8()
+            .chunks(4)
+            .map(|v| ((v[0] as u32) << 16) | ((v[1] as u32) << 8) | v[2] as u32)
+            .collect()
+    }
 }
