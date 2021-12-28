@@ -1,5 +1,4 @@
 use crate::engine::Game;
-use crate::objects::SegaLogo;
 
 use minifb::{Key, Window, WindowOptions};
 
@@ -11,8 +10,11 @@ pub(crate) fn run(mut game: Game) -> Result<(), Box<dyn std::error::Error>> {
     let sprites =
         crate::surface::Surface::from_image("resources/sonic/Data/Sprites/Title/Title.gif")?;
     let title = sprites.crop_into(323, 242, 188, 58);
+    let sonic = sprites.crop_into(1, 1, 65, 64);
 
-    screen.composite(&title, 10, 10)?;
+    screen.fill(255, 255, 255, 255);
+    screen.composite(&title, (width / 2) - (title.width() / 2), 60)?;
+    screen.composite(&sonic, 100, 100)?;
 
     let mut window = Window::new(
         &game.config.window_title,

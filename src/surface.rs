@@ -29,6 +29,14 @@ impl Surface {
         })
     }
 
+    pub fn width(&self) -> u32 {
+        self.buffer.width()
+    }
+
+    pub fn height(&self) -> u32 {
+        self.buffer.height()
+    }
+
     pub fn composite(
         &mut self,
         surface: &Surface,
@@ -42,6 +50,15 @@ impl Surface {
         })
     }
 
+    pub fn fill(&mut self, r: u8, g: u8, b: u8, a: u8) {
+        let p = image::Rgba([r, g, b, a]);
+        for y in 0..self.buffer.height() {
+            for x in 0..self.buffer.width() {
+                self.buffer.put_pixel(x, y, p);
+            }
+        }
+    }
+
     pub fn crop_into(&self, x: u32, y: u32, width: u32, height: u32) -> Self {
         Self {
             buffer: self.buffer.crop_imm(x, y, width, height),
@@ -51,12 +68,12 @@ impl Surface {
 
     fn blend1bit(&mut self, surface: &Surface, offset_x: u32, offset_y: u32) {
         for y in 0..(surface.buffer.height()) {
-            if y >= self.buffer.height() {
+            if (y + offset_y) >= self.buffer.height() {
                 break;
             }
 
             for x in 0..(surface.buffer.width()) {
-                if x >= self.buffer.width() {
+                if (x + offset_x) >= self.buffer.width() {
                     break;
                 }
                 let p = surface.buffer.get_pixel(x, y);
@@ -65,7 +82,7 @@ impl Surface {
                     // alpha blending
                     // screen.blend_pixel(i + 0, k + 0, p);
                 } else {
-                    self.buffer.put_pixel(x + 0, y + 0, p);
+                    self.buffer.put_pixel(x + offset_x, y + offset_y, p);
                 }
             }
         }
