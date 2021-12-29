@@ -44,6 +44,13 @@ MD5                               Size      Origin
 2881d2492be3ba5d3b6106cdbf82c3e5  38198396  Sonic the Hedgehog Classic apk v3.7.0
 ```
 
+Here's some arweave txids:
+
+```
+Release     Arweave TXID
+Sonic 1     nwwbTljMYHScY6fgbQkuNdH5127wAidBYrCH9w8dpAk
+```
+
 ```bash
 cargo run --package rsdk-extract -- <file>
 ```
