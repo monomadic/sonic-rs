@@ -4,6 +4,8 @@ Reverse engineered Sonic, but building a new, entirely open, moddable engine ins
 
 ## Goals
 - Pure rust Sonic implementation with fewest dependencies possible
+- Simpler modding / level editing through postprocessing assets
+- 8 bit alpha compositing (vs 1-bit on rsdk)
 - Run anywhere cargo builds (baseline software pixel framebuffer engine)
 - Emphasis on open formats, clear code, extensibility, and modding
 - Fastest, lowest resource open Sonic implementation ever

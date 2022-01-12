@@ -1,4 +1,5 @@
 use byteorder::{LittleEndian, ReadBytesExt};
+use image::*;
 use serde::Serialize;
 use std::io::Write;
 
@@ -16,7 +17,7 @@ pub(crate) fn run(resource_dir: &str) -> std::io::Result<()> {
     process_act_file(&format!("{}Data/Stages/Zone01/Act2", resource_dir))?;
     process_act_file(&format!("{}Data/Stages/Zone01/Act3", resource_dir))?;
 
-    process_tiles(&format!("{}Data/Stages/Zone01/128x128Tiles", resource_dir))?;
+    process_tiles(&format!("{}Data/Stages/Zone01", resource_dir))?;
 
     Ok(())
 }
@@ -47,8 +48,11 @@ type Block = Vec<Vec<Tile16>>;
 type BlockIndex = Vec<Block>;
 
 fn process_tiles(input: &str) -> std::io::Result<()> {
-    let output = format!("{}.json", input);
-    let input = format!("{}.bin", input);
+    let mut stage_image = image::RgbImage::new(512, 512);
+
+    let output = format!("{}/tilemap.json", input);
+    let input = format!("{}/512x512.bin", input);
+    let tiles = image::open(format!("{}/16x16Tiles.gif", input));
     let mut buffer: &[u8] = &*std::fs::read(input)?;
     info!("Read {} bytes.", buffer.len());
 
@@ -88,6 +92,22 @@ fn process_tiles(input: &str) -> std::io::Result<()> {
 
     let json = serde_json::to_string(&block_index).unwrap();
     std::fs::write(output, json)?;
+
+    for block in block_index {
+        for row in block {
+            for tile in row {
+                print!("{},", tile.index);
+            }
+            print!("\n");
+        }
+    }
+
+    println!("writing image");
+    for (x, y, pixel) in stage_image.enumerate_pixels_mut() {
+        *pixel = image::Rgb([255, 0, 0]);
+    }
+    stage_image.save("stage.png").unwrap();
+    println!("done");
 
     Ok(())
 }

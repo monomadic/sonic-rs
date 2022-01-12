@@ -66,6 +66,13 @@ impl Surface {
         }
     }
 
+    pub fn crop(&self, x: u32, y: u32, width: u32, height: u32) -> Self {
+        Self {
+            buffer: self.buffer.clone().crop(x, y, width, height),
+            blend_mode: self.blend_mode.clone(),
+        }
+    }
+
     fn blend1bit(&mut self, surface: &Surface, offset_x: u32, offset_y: u32) {
         for y in 0..(surface.buffer.height()) {
             if (y + offset_y) >= self.buffer.height() {

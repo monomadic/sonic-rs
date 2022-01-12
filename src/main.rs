@@ -4,6 +4,7 @@ mod image;
 mod objects;
 mod scene;
 mod surface;
+mod tileset;
 
 fn main() {
     match display::run(engine::Game::default()) {
