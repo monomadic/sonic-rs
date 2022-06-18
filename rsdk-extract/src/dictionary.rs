@@ -1,4 +1,3 @@
-use md5;
 use std::collections::HashMap;
 
 static DICTIONARY: &str = include_str!("dictionary.txt");

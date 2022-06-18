@@ -16,6 +16,6 @@ pub(crate) fn output_path(buffer: &[u8]) -> String {
         "resources/{}",
         &version
             .map(|version| format!("{}/", version))
-            .unwrap_or(String::from("")),
+            .unwrap_or_else(|| String::from("")),
     )
 }

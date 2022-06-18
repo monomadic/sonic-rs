@@ -8,7 +8,8 @@ pub(crate) fn rsdkv4(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let dictionary = crate::dictionary::generate();
 
-    let whole_file = &buffer.clone();
+    // todo: convert to binread with Cursor, this is bad
+    let whole_file = <&[u8]>::clone(&buffer);
     let mut magic_number = [0; 6];
     buffer.read_exact(&mut magic_number).unwrap();
     let magic_number = std::str::from_utf8(&magic_number).unwrap();
@@ -108,7 +109,7 @@ fn decrypt(bytes: &[u8], filesize: u32) -> Vec<u8> {
 
         tmp_byte = e_string_no ^ (key2[e_string_pos_b] as u32);
         // print!("tmp_byte {:X} ", tmp_byte);
-        tmp_byte ^= byte.clone() as u32;
+        tmp_byte ^= *byte as u32;
         // print!("tmp_byte {:X} {:X} ", tmp_byte, bytes[0]);
         if e_nibbleswap == 1 {
             // swap nibbles: 0xAB <-> 0xBA
@@ -167,7 +168,7 @@ fn decrypt(bytes: &[u8], filesize: u32) -> Vec<u8> {
 // }
 
 fn mul_unsigned_high(a: u32, b: i32) -> Vec<u8> {
-    (((a as i64) * (b as i64) >> 32 as i64) as i32)
+    ((((a as i64) * (b as i64)) >> 32_i64) as i32)
         .to_be_bytes()
         .to_vec()
 }
