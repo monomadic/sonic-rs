@@ -1,4 +1,4 @@
-# Sonic
+# Sonic-Rust
 A sonic engine written in pure rust.
 
 Reverse engineered Sonic, but building a new, entirely open, moddable engine instead of RSDK.
