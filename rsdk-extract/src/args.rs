@@ -1,6 +1,5 @@
-use structopt::StructOpt;
-// use std::env;
 use std::path::PathBuf;
+use structopt::StructOpt;
 
 pub(crate) fn run() -> Result<(), Box<dyn std::error::Error>> {
     println!("RSDK Extractor v0.1.1\n");
@@ -17,9 +16,9 @@ pub(crate) fn run() -> Result<(), Box<dyn std::error::Error>> {
         crate::extract::rsdkv4(&buffer, &output_path)?;
     }
 
-    if !args.skip_postprocessor {
-        crate::postprocessor::run(&output_path)?;
-    }
+    // if !args.skip_postprocessor {
+    //     crate::postprocessor::run(&output_path)?;
+    // }
 
     Ok(())
 }

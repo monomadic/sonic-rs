@@ -1,3 +1,4 @@
+use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::io::Read;
 
@@ -66,11 +67,14 @@ pub(crate) fn rsdkv4(
         // swallow error
         let mut path = std::path::PathBuf::from(&output_path);
         path.pop();
-        let _ = std::fs::create_dir_all(&path);
+
+        log::info!("creating dir {:?}", &path);
+        std::fs::create_dir_all(&path)?;
 
         use std::io::Write;
-        let mut file_buffer = std::fs::File::create(output_path).unwrap();
-        file_buffer.write_all(&file).unwrap();
+        log::info!("writing {:?}", &output_path);
+        let mut file_buffer = std::fs::File::create(output_path)?;
+        file_buffer.write_all(&file)?;
     }
 
     generate_eload_keys(4388);

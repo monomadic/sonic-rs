@@ -1,6 +1,5 @@
 use crate::engine::Game;
 use crate::scene::*;
-
 use minifb::{Key, Window, WindowOptions};
 
 pub(crate) fn run(mut game: Game) -> Result<(), Box<dyn std::error::Error>> {

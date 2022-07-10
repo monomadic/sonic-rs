@@ -11,4 +11,6 @@ image = "0.24.2"
 [workspace]
 members = [
   "rsdk-extract",
+  "processor",
+  "sonic-bevy"
 ]
